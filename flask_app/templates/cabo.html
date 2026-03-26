@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="White Travels | Autonomous Agentic Travel Concierge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/destinations.css') }}">
+    <title>White Travels | Autonomous Agentic Travel Concierge</title>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/#home"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/#book"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/#packages"><i class="fas fa-train"></i> Trains</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons">
+            <i class="fas fa-search" id="search-btn"></i>
+            <i class="fas fa-user" id="login-btn"></i>
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout">Logout</a>
+            {% endif %}
+        </div>
+
+        <form action="" method="post" class="search-bar-container">
+            <input type="search" id="search-bar" placeholder="search here...">
+            <label for="search-bar" class="fas fa-search"></label>
+        </form>
+    </header>
+    <!-- Login form popup  -->
+    <div class="login-form-container">
+
+        <i class="fas fa-times" id="form-close"></i>
+
+        <form action="" method="post">
+            <h3>login</h3>
+            <input type="email" class="box" placeholder="enter your email...">
+            <input type="password" class="box" placeholder="enter your password">
+            <input type="submit" class="btn" value="Login Now">
+            <p>Don't have an account? <a href="/register_now">Register Now</a></p>
+        </form>
+
+    </div>
+
+    <!-- main page  -->
+
+    <section class="home">
+        <h1 id="destination">Cabo San Lucas, Baja California Sur, Mexico</h1>
+    </section>
+
+    <section class="date">
+        <form onsubmit="getCaboData(event)" id="caboForm">
+            <h3>Choose Your Dates: </h3>
+            <label for="check_in">Check In: </label>
+            <input type="date" name="check_in" class="inputBox" id="check_in">
+            <label for="check_out">Check Out: </label>
+            <input type="date" name="check_out" class="inputBox" id="check_out">
+            <label for="num_adults">Adults: </label>
+            <input type="number" name="num_adults" placeholder="Number of Adults" class="inputBox" id="num_adults">
+            <div id="error"></div>
+            <input type="submit" class="btn"  id='btn' value="Search">
+        </form>
+    </section>
+
+    <section class="hotels">
+        <div id="packages-options" style="display: none; margin-bottom: 2rem;">
+            <h2 style="font-size: 3rem; color: var(--primary); text-align: center; margin-bottom: 2rem;">Select Your Cabo Package Tier</h2>
+            <p style="font-size: 1.6rem; text-align: center; margin-bottom: 3rem;"><b>Selected Dates:</b> <span id="display-dates"></span></p>
+            
+            <div class="box-container" style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                <!-- Standard -->
+                <div class="box" style="flex: 1 1 30rem; padding: 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); text-align: center;">
+                    <h3 style="font-size: 2.5rem; color: #333;"><i class="fas fa-star" style="color: gold;"></i> Standard</h3>
+                    <p style="font-size: 1.4rem; color: #666; margin: 1.5rem 0;">3-Star Hotel Accommodation<br>Economy Class Flights<br>Group City Tour</p>
+                    <div class="price" style="font-size: 2.5rem; color: var(--primary); margin: 1rem 0;">$800</div>
+                    <form action="/book_package" method="POST">
+                        <input type="hidden" name="package_name" value="Cabo Standard Package">
+                        <input type="hidden" name="price" value="$800">
+                        <input type="hidden" name="arrival_date" class="hidden-arrival">
+                        <input type="hidden" name="departure_date" class="hidden-departure">
+                        <input type="hidden" name="how_many" class="hidden-adults">
+                        <input type="hidden" name="type" value="Package">
+                        <input type="submit" value="Book Standard" class="btn" style="width: 100%;">
+                    </form>
+                </div>
+
+                <!-- Premium -->
+                <div class="box" style="flex: 1 1 30rem; padding: 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); text-align: center; border: 2px solid var(--primary);">
+                    <h3 style="font-size: 2.5rem; color: #333;"><i class="fas fa-gem" style="color: var(--primary);"></i> Premium</h3>
+                    <p style="font-size: 1.4rem; color: #666; margin: 1.5rem 0;">4-Star Resort Accommodation<br>Premium Economy Flights<br>Guided Private Tours</p>
+                    <div class="price" style="font-size: 2.5rem; color: var(--primary); margin: 1rem 0;">$1,100</div>
+                    <form action="/book_package" method="POST">
+                        <input type="hidden" name="package_name" value="Cabo Premium Package">
+                        <input type="hidden" name="price" value="$1100">
+                        <input type="hidden" name="arrival_date" class="hidden-arrival">
+                        <input type="hidden" name="departure_date" class="hidden-departure">
+                        <input type="hidden" name="how_many" class="hidden-adults">
+                        <input type="hidden" name="type" value="Package">
+                        <input type="submit" value="Book Premium" class="btn" style="width: 100%;">
+                    </form>
+                </div>
+
+                <!-- Luxury -->
+                <div class="box" style="flex: 1 1 30rem; padding: 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); text-align: center;">
+                    <h3 style="font-size: 2.5rem; color: #333;"><i class="fas fa-crown" style="color: gold;"></i> Luxury</h3>
+                    <p style="font-size: 1.4rem; color: #666; margin: 1.5rem 0;">5-Star Luxury Villa<br>Business Class Flights<br>Private Yacht Charter</p>
+                    <div class="price" style="font-size: 2.5rem; color: var(--primary); margin: 1rem 0;">$1,800</div>
+                    <form action="/book_package" method="POST">
+                        <input type="hidden" name="package_name" value="Cabo Luxury Package">
+                        <input type="hidden" name="price" value="$1800">
+                        <input type="hidden" name="arrival_date" class="hidden-arrival">
+                        <input type="hidden" name="departure_date" class="hidden-departure">
+                        <input type="hidden" name="how_many" class="hidden-adults">
+                        <input type="hidden" name="type" value="Package">
+                        <input type="submit" value="Book Luxury" class="btn" style="width: 100%;">
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="box-container" id="box"></div>
+    </section>
+
+    <script>
+        function getCaboData(event) {
+            event.preventDefault();
+            const cin = document.getElementById('check_in').value;
+            const cout = document.getElementById('check_out').value;
+            const adults = document.getElementById('num_adults').value;
+            
+            if (!cin || !cout || !adults) {
+                document.getElementById('error').innerHTML = "<p style='color:red; font-size:1.4rem;'>Please fill all fields</p>";
+                return;
+            }
+
+            // Show booking confirmation section
+            document.getElementById('packages-options').style.display = 'block';
+            document.getElementById('display-dates').innerText = `${cin} to ${cout} (${adults} Adults)`;
+            
+            const arrInputs = document.querySelectorAll('.hidden-arrival');
+            const depInputs = document.querySelectorAll('.hidden-departure');
+            const adInputs = document.querySelectorAll('.hidden-adults');
+            
+            arrInputs.forEach(input => input.value = cin);
+            depInputs.forEach(input => input.value = cout);
+            adInputs.forEach(input => input.value = adults);
+
+            // Optional: Call original search API if needed
+            // original logic here...
+        }
+    </script>
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+</body>
+</html>

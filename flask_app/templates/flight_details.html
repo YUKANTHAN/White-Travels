@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Flight Details | White Travels</title>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons">
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout">Logout</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="packages" style="padding-top: 10rem;">
+        <h1 class="heading">
+            <span>F</span>
+            <span>l</span>
+            <span>i</span>
+            <span>g</span>
+            <span>h</span>
+            <span>t</span>
+            <span class="space"></span>
+            <span>D</span>
+            <span>e</span>
+            <span>t</span>
+            <span>a</span>
+            <span>i</span>
+            <span>l</span>
+            <span>s</span>
+        </h1>
+
+        <div class="box-container">
+            {% for flight in flights %}
+            <div class="box" {% if flight.airline == 'Premium Wings' %}style="border: 2px solid var(--primary);"{% endif %}>
+                <div class="content">
+                    <h3> <i class="fas fa-plane-departure"></i> {{origin}} to {{destination}}</h3>
+                    <p><b>Airline:</b> {{flight.airline}}</p>
+                    <p><b>Class:</b> {{flight.class}}</p>
+                    <p><b>Departure Time:</b> {{flight.time}}</p>
+                    <div class="price">{{flight.price}}</div>
+                    <form action="/book_flight" method="POST">
+                        <input type="hidden" name="origin" value="{{origin}}">
+                        <input type="hidden" name="destination" value="{{destination}}">
+                        <input type="hidden" name="airline" value="{{flight.airline}}">
+                        <input type="hidden" name="flight_class" value="{{flight.class}}">
+                        <input type="hidden" name="price" value="{{flight.price}}">
+                        <input type="hidden" name="type" value="Flight">
+                        <input type="submit" value="Book This Flight" class="btn">
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+</body>
+</html>

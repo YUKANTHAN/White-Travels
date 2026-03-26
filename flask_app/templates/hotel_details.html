@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Hotel Payment & Details | White Travels</title>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons">
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout">Logout</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="book" style="padding-top: 10rem;">
+        <h1 class="heading">
+            <span>H</span>
+            <span>o</span>
+            <span>t</span>
+            <span>e</span>
+            <span>l</span>
+            <span class="space"></span>
+            <span>P</span>
+            <span>a</span>
+            <span>y</span>
+            <span>m</span>
+            <span>e</span>
+            <span>n</span>
+            <span>t</span>
+        </h1>
+
+        <div class="box-container" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem;">
+            {% for hotel in hotels %}
+            <div class="box" style="flex: 1 1 30rem; padding: 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);">
+                <div class="content">
+                    <h3> <i class="fas fa-hotel"></i> {{hotel.name}}</h3>
+                    <p><b>Rating:</b> {{hotel.stars}} <i class="fas fa-star" style="color: gold;"></i></p>
+                    <p><b>Description:</b> {{hotel.description}}</p>
+                    <div class="price" style="font-size: 2rem; color: var(--primary); margin: 1rem 0;">{{hotel.price}} / night</div>
+                    <button class="btn" onclick="selectHotel('{{hotel.name}}', '{{hotel.price}}')">Select This Hotel</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="payment-section" style="display: none; background: #fff; padding: 3rem; border-radius: 1rem; box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1);">
+            <form action="/book_hotel" method="POST">
+                <h3 style="font-size: 2.5rem; color: var(--primary); margin-bottom: 2rem;">Payment & Booking for <span id="selected-hotel-name"></span></h3>
+                
+                <div class="inputBox" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.8rem;">Card Holder Name: </h3>
+                    <input type="text" name="card_name" placeholder="Name on Card" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
+                </div>
+                <div class="inputBox" style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.8rem;">Card Number: </h3>
+                    <input type="text" name="card_number" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
+                </div>
+                <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                    <div class="inputBox" style="flex: 1;">
+                        <h3 style="font-size: 1.8rem;">Expiry: </h3>
+                        <input type="text" name="expiry" placeholder="MM/YY" maxlength="5" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
+                    </div>
+                    <div class="inputBox" style="flex: 1;">
+                        <h3 style="font-size: 1.8rem;">CVV: </h3>
+                        <input type="password" name="cvv" placeholder="123" maxlength="3" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
+                    </div>
+                </div>
+                
+                <h3 style="font-size: 2.22rem; color: var(--primary); margin: 2rem 0 1.5rem;">Payment Method</h3>
+                <div class="inputBox" style="display: flex; gap: 2rem; align-items: center; border: .1rem solid rgba(0,0,0,.1); padding: 1.5rem; border-radius: .5rem; margin-bottom: 2rem;">
+                    <label style="font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; gap: 1rem;">
+                        <input type="radio" name="payment_method" value="Credit Card" checked style="width: auto;"> <i class="fab fa-cc-visa"></i> Visa/Master
+                    </label>
+                    <label style="font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; gap: 1rem;">
+                        <input type="radio" name="payment_method" value="PayPal" style="width: auto;"> <i class="fab fa-paypal"></i> PayPal
+                    </label>
+                </div>
+
+                <input type="hidden" name="destination" value="{{destination}}">
+                <input type="hidden" name="hotel_name" id="hidden-hotel-name">
+                <input type="hidden" name="price" id="hidden-hotel-price">
+                <input type="hidden" name="type" value="Hotel">
+                <input type="submit" value="Pay & Book Now" class="btn" style="width: 100%;">
+            </form>
+        </div>
+
+        <script>
+            function selectHotel(name, price) {
+                document.getElementById('payment-section').style.display = 'block';
+                document.getElementById('selected-hotel-name').innerText = name;
+                document.getElementById('hidden-hotel-name').value = name;
+                document.getElementById('hidden-hotel-price').value = price;
+                window.scrollTo({
+                    top: document.getElementById('payment-section').offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        </script>
+    </section>
+
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+</body>
+</html>

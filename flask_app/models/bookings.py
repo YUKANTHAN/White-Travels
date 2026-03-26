@@ -1,0 +1,38 @@
+from flask_app.config.mongodb_connection import connectToMongo
+from bson.objectid import ObjectId
+from flask import flash
+DATABASE = "white_travels_db"
+
+class Booking:
+    def __init__(self,data):
+        self.id = data.get('id')
+        self.user_id = data.get('user_id')
+        self.type = data.get('type', 'General')
+        self.created_at = data.get('created_at', "")
+        self.updated_at = data.get('updated_at', "")
+        # Store all other data as attributes
+        for key, value in data.items():
+            if key not in ['id', 'user_id', 'type', 'created_at', 'updated_at']:
+                setattr(self, str(key), value)
+
+    @classmethod
+    def save(cls, data):
+        db = connectToMongo(DATABASE)
+        bookings = db.get_collection("bookings")
+        data['created_at'] = data.get('created_at', "")
+        data['updated_at'] = data.get('updated_at', "")
+        return str(bookings.insert_one(data).inserted_id)
+
+    @staticmethod
+    def validate(data_data):
+        is_valid = True
+        # Basic validation for general bookings
+        if 'where_to' in data_data:
+            if len(data_data['where_to']) < 2:
+                is_valid = False
+                flash("Where to must be at least 2 characters long", "err_where_to")
+        if 'how_many' in data_data:
+            if not data_data['how_many'] or int(data_data['how_many']) < 1:
+                is_valid = False
+                flash("How many field must be 1 guest or more", "err_how_many")
+        return is_valid

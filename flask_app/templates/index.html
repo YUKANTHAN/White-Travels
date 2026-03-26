@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="White Travels | Autonomous Agentic Travel Concierge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>White Travels | Autonomous Agentic Travel Concierge</title>
+    <style>
+        .booking-card:hover {
+            transform: translateY(-1rem);
+            background: var(--primary) !important;
+        }
+        .booking-card:hover i, .booking-card:hover h3, .booking-card:hover p {
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div class="notification-container" style="position: relative; display: inline-block;">
+                <i class="fas fa-bell" id="notification-btn" style="cursor: pointer; position: relative;">
+                    <span style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold;">2</span>
+                </i>
+                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 350px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
+                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-robot"></i> AI Travel Alerts</h3>
+                    
+                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-plane-slash" style="color: red;"></i> Flight UA-402 Cancelled</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Severe Weather</p>
+                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
+                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
+                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Flight DL-890 (Departs 2h later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                        </div>
+                    </div>
+
+                    <div class="alert-item" style="padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-train" style="color: red;"></i> Train MX-112 Cancelled</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Track Maintenance</p>
+                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
+                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
+                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Express Train 901 (Departs 45m later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <i class="fas fa-search" id="search-btn"></i>
+            <i class="fas fa-user" id="login-btn"></i>
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout" style="margin-left: auto;">Logout</a>
+            {% endif %}
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const notifBtn = document.getElementById('notification-btn');
+                const aiNotifs = document.getElementById('ai-notifications');
+                if(notifBtn && aiNotifs) {
+                    notifBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        aiNotifs.style.display = aiNotifs.style.display === 'none' ? 'block' : 'none';
+                    });
+                    document.addEventListener('click', function(e) {
+                        if (!notifBtn.contains(e.target) && !aiNotifs.contains(e.target)) {
+                            aiNotifs.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        </script>
+
+        <form action="" method="post" class="search-bar-container">
+            <input type="search" id="search-bar" placeholder="search here...">
+            <label for="search-bar" class="fas fa-search"></label>
+        </form>
+    </header>
+
+    {% with messages = get_flashed_messages(category_filter=['success']) %}
+      {% if messages %}
+        <div style="position: fixed; top: 8rem; left: 50%; transform: translateX(-50%); z-index: 2000; background: #28a745; color: white; padding: 1rem 3rem; border-radius: .5rem; font-size: 1.6rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);">
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <!-- Login form popup  -->
+    <div class="login-form-container" id="#login">
+
+        <i class="fas fa-times" id="form-close"></i>
+
+        <form action="/login" method="post">
+            <h3>login</h3>
+            <input type="email" name="email" class="box" placeholder="enter your email...">
+            {% for message in get_flashed_messages(category_filter = ['err_login_email']) %}
+            <p class="red">{{message}}</p>
+            {% endfor %}
+            <input type="password" name="password" class="box" placeholder="enter your password">
+            {% for message in get_flashed_messages(category_filter = ['err_login_password']) %}
+            <p class="red">{{message}}</p>
+            {% endfor %}
+            <input type="submit" class="btn" value="Login Now">
+            <p>Don't have an account? <a href="/register_now">Register Now</a></p>
+        </form>
+
+    </div>
+    <!-- home section starts -->
+
+    <section class="home" id="home">
+        <div class="content">
+            <h3>Adventure is Worthwhile</h3>
+            <p>Discover new places with us, adventure awaits</p>
+            <a href="#" class="btn">Discover More</a>
+        </div>
+
+        <div class="photo-container">
+            <img src="{{url_for('static', filename='img/home.jpg')}}" alt="Home section background picture">
+        </div>
+    </section>
+    <!-- booking section starts  -->
+
+    <section class="book" id="book">
+        <!-- welcome message  -->
+        {% if session.user_id != 5 %}
+        <h1 class="welcome">Welcome {{user.first_name}}!</h1>
+        {% endif %}
+        
+        <h1 class="heading">
+            <span>b</span>
+            <span>o</span>
+            <span>o</span>
+            <span>k</span>
+            <span class="space"></span>
+            <span>n</span>
+            <span>o</span>
+            <span>w</span>
+        </h1>
+
+        <div class="row">
+
+            <div class="image">
+                <img src="{{url_for('static', filename='img/White Travels_logo.png')}}" alt="Booking White Travels logo">
+            </div>
+
+            <div class="booking-options" style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; width: 100%; padding: 2rem;">
+                <a href="/flights" class="booking-card" style="flex: 1; min-width: 25rem; padding: 3rem; background: #fff; border-radius: 1rem; text-align: center; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); transition: transform .3s;">
+                    <i class="fas fa-plane" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem;"></i>
+                    <h3 style="font-size: 2.5rem; color: #333;">Book Flights</h3>
+                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Travel the world with our premium airline partners.</p>
+                </a>
+                
+                <a href="/hotels" class="booking-card" style="flex: 1; min-width: 25rem; padding: 3rem; background: #fff; border-radius: 1rem; text-align: center; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); transition: transform .3s;">
+                    <i class="fas fa-hotel" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem;"></i>
+                    <h3 style="font-size: 2.5rem; color: #333;">Book Hotels</h3>
+                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Find the perfect stay at the best prices guaranteed.</p>
+                </a>
+
+                <a href="/trains" class="booking-card" style="flex: 1; min-width: 25rem; padding: 3rem; background: #fff; border-radius: 1rem; text-align: center; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); transition: transform .3s;">
+                    <i class="fas fa-train" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem;"></i>
+                    <h3 style="font-size: 2.5rem; color: #333;">Book Trains</h3>
+                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Scenic routes and seamless city-to-city travel.</p>
+                </a>
+            </div>
+
+        </div>
+    </section>
+    
+    <!-- packages section  -->
+
+    <section class="packages" id="packages">
+        <h1 class="heading">
+            <span>p</span>
+            <span>a</span>
+            <span>c</span>
+            <span>k</span>
+            <span>a</span>
+            <span>g</span>
+            <span>e</span>
+            <span>s</span>
+        </h1>
+
+        <div class="box-container">
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/cabo.jpg')}}" alt="Cabo San Lucas vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Cabo San Lucas</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$800 <span>$1,100</span></div>
+                    <a href="/destinations/cabo" class="btn" id="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/london.jpg')}}" alt="London vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>London</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$1,200 <span>$1,500</span></div>
+                    <a href="/destinations/london" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/tokyo.jpg')}}" alt="Tokyo vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Tokyo</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$1,800 <span>$2,300</span></div>
+                    <a href="/destinations/tokyo" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/honolulu.jpg')}}" alt="Honolulu vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Honolulu</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$800 <span>$1,000</span></div>
+                    <a href="/destinations/honolulu" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/new_york.jpg')}}" alt="New York vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>New York City</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$900 <span>$1,200</span></div>
+                    <a href="/destinations/new_york_city" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/paris.jpg')}}" alt="Paris vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Paris</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$900 <span>$1,350</span></div>
+                    <a href="/destinations/paris" class="btn">More Info</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- contact section  -->
+
+    <section class="contact" id="contact">
+        <h1 class="heading">
+            <span>c</span>
+            <span>o</span>
+            <span>n</span>
+            <span>t</span>
+            <span>a</span>
+            <span>c</span>
+            <span>t</span>
+            <span class="space"></span>
+            <span>u</span>
+            <span>s</span>
+        </h1>
+
+        <div class="row">
+
+            <div class="image">
+                <img src="{{url_for('static', filename='img/contact-img.svg')}}" alt="Contact us logo">
+            </div>
+
+            <form action="/contact" id="contact_form" method="post">
+                <div class="inputBox">
+                    <input type="text" name="contact_name" placeholder="name">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_name']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                    <input type="email" name="contact_email" placeholder="email">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_email']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                </div>
+                <div class="inputBox">
+                    <input type="tel" name="contact_number" placeholder="number">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_number']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                    <input type="text" name="contact_subject" placeholder="subject">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_subject']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                <textarea name="contact_message" cols="30" rows="10" placeholder="message"></textarea>
+                {% for message in get_flashed_messages(category_filter = ['err_contact_message']) %}
+                <p class="red">{{message}}</p>
+                {% endfor %}
+                <input type="submit" class="btn" value="Send Message">
+            </form>
+
+        </div>
+    </section>
+    <!-- AI DISRUPTION RECOVERY SECTION (MMT + Siri Hybrid) -->
+    <section class="ai-recovery" id="ai-recovery" style="background: var(--section-bg); padding-top: 5rem;">
+        <h1 class="heading">
+            <span>A</span>
+            <span>I</span>
+            <span class="space"></span>
+            <span>R</span>
+            <span>e</span>
+            <span>c</span>
+            <span>o</span>
+            <span>v</span>
+            <span>e</span>
+            <span>r</span>
+            <span>y</span>
+        </h1>
+        
+        <div class="row" style="display: flex; flex-wrap: wrap; gap: 2rem;">
+            <!-- Simulation Trigger -->
+            <div class="simulator-card" style="flex: 1 1 30rem; background: #fff; padding: 2rem; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,0.05);">
+                <h3 style="font-size: 2rem; color: var(--accent); margin-bottom: 1.5rem;">Disruption Simulator</h3>
+                <p style="font-size: 1.4rem; color: var(--text-muted); margin-bottom: 2rem;">Simulate a real-time travel disruption to see the White Travels AI Agent in action.</p>
+                <button onclick="triggerDisruption('FL202')" class="btn" style="width: 100%; margin-bottom: 1rem; background: #dc3545; border-color: #dc3545;">Simulate Flight Cancellation (FL202)</button>
+                <button onclick="triggerDisruption('FL101')" class="btn" style="width: 100%; background: var(--accent); border-color: var(--accent);">Simulate Delay (FL101)</button>
+            </div>
+
+            <!-- Real-time SSE Logs -->
+            <div class="log-terminal" style="flex: 2 1 50rem; background: #001A33; color: #00FF41; font-family: 'Courier New', monospace; padding: 1.5rem; border-radius: 1rem; height: 300px; overflow-y: auto; font-size: 1.2rem;">
+                <div id="ai-logs">
+                    <span style="color: #fff;">[SYSTEM]: Standing by for disruption event...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Plan Modal (Hidden by default) -->
+        <div id="recovery-plan" style="display: none; margin-top: 3rem; padding: 2rem; border: 2px solid var(--primary); border-radius: 1rem; background: #fff;">
+            <h2 style="font-size: 2.2rem; color: var(--primary);"><i class="fas fa-magic"></i> Autonomous Recovery Plan</h2>
+            <div id="plan-details" style="margin: 1.5rem 0; font-size: 1.6rem;"></div>
+            <div id="plan-confidence" style="font-weight: bold; margin-bottom: 1rem;"></div>
+            <div id="plan-reason" style="margin-left: 2rem; font-style: italic; color: var(--text-muted);"></div>
+            <div id="plan-alternatives" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 1.4rem; color: #666;"></div>
+            <button onclick="confirmPlan()" class="btn" style="margin-top: 1rem;">Confirm & Re-Book</button>
+        </div>
+    </section>
+
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+</body>
+</html>

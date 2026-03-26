@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Train & Passenger Details | White Travels</title>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons">
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout">Logout</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="book" style="padding-top: 10rem;">
+        <h1 class="heading">
+            <span>T</span>
+            <span>r</span>
+            <span>a</span>
+            <span>i</span>
+            <span>n</span>
+            <span class="space"></span>
+            <span>B</span>
+            <span>o</span>
+            <span>o</span>
+            <span>k</span>
+            <span>i</span>
+            <span>n</span>
+            <span>g</span>
+        </h1>
+
+        <div class="box-container" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem;">
+            {% for train in trains %}
+            <div class="box" style="flex: 1 1 30rem; padding: 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);">
+                <div class="content">
+                    <h3> <i class="fas fa-train"></i> {{train.name}}</h3>
+                    <p><b>From:</b> {{origin}}</p>
+                    <p><b>To:</b> {{destination}}</p>
+                    <p><b>Departure:</b> {{train.departure}}</p>
+                    <p><b>Duration:</b> {{train.duration}}</p>
+                    <div class="price" style="font-size: 2rem; color: var(--primary); margin: 1rem 0;">{{train.price}}</div>
+                    <button class="btn" onclick="selectTrain('{{train.name}}', '{{train.price}}')">Select This Train</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="passenger-section" style="display: none; background: #fff; padding: 3rem; border-radius: 1rem; box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1);">
+            <form action="/book_train" method="POST">
+                <h3 style="font-size: 2.5rem; color: var(--primary); margin-bottom: 2rem;">Passenger Details for <span id="selected-train-name"></span></h3>
+                <div class="inputBox" style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.8rem;">Full Name: </h3>
+                    <input type="text" name="person_name" placeholder="Name on ID" style="width: 100%; padding: 1.2rem; filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); border-radius: .5rem; font-size: 1.6rem;" required>
+                </div>
+                <div class="inputBox" style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.8rem;">Age: </h3>
+                    <input type="number" name="person_age" placeholder="Passenger Age" style="width: 100%; padding: 1.2rem; filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); border-radius: .5rem; font-size: 1.6rem;" required>
+                </div>
+                <div class="inputBox" style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.8rem;">Gender: </h3>
+                    <select name="gender" style="width: 100%; padding: 1.2rem; filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); border-radius: .5rem; font-size: 1.6rem;" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <input type="hidden" name="origin" value="{{origin}}">
+                <input type="hidden" name="destination" value="{{destination}}">
+                <input type="hidden" name="train_name" id="hidden-train-name">
+                <input type="hidden" name="price" id="hidden-train-price">
+                <input type="hidden" name="type" value="Train">
+                <input type="submit" value="Confirm & Book Train" class="btn" style="width: 100%;">
+            </form>
+        </div>
+
+        <script>
+            function selectTrain(name, price) {
+                document.getElementById('passenger-section').style.display = 'block';
+                document.getElementById('selected-train-name').innerText = name;
+                document.getElementById('hidden-train-name').value = name;
+                document.getElementById('hidden-train-price').value = price;
+                window.scrollTo({
+                    top: document.getElementById('passenger-section').offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        </script>
+    </section>
+
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="White Travels | Book Trains">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Book Trains | White Travels</title>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div class="notification-container" style="position: relative; display: inline-block;">
+                <i class="fas fa-bell" id="notification-btn" style="cursor: pointer; position: relative;">
+                    <span style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold;">2</span>
+                </i>
+                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 350px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
+                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-robot"></i> AI Travel Alerts</h3>
+                    
+                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-plane-slash" style="color: red;"></i> Flight UA-402 Cancelled</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Severe Weather</p>
+                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
+                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
+                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Flight DL-890 (Departs 2h later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                        </div>
+                    </div>
+
+                    <div class="alert-item" style="padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-train" style="color: red;"></i> Train MX-112 Cancelled</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Track Maintenance</p>
+                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
+                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
+                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Express Train 901 (Departs 45m later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout" style="margin-left: auto;">Logout</a>
+            {% endif %}
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const notifBtn = document.getElementById('notification-btn');
+                const aiNotifs = document.getElementById('ai-notifications');
+                if(notifBtn && aiNotifs) {
+                    notifBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        aiNotifs.style.display = aiNotifs.style.display === 'none' ? 'block' : 'none';
+                    });
+                    document.addEventListener('click', function(e) {
+                        if (!notifBtn.contains(e.target) && !aiNotifs.contains(e.target)) {
+                            aiNotifs.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        </script>
+    </header>
+
+    <section class="book" style="padding-top: 10rem;">
+        <h1 class="heading">
+            <span>t</span>
+            <span>r</span>
+            <span>a</span>
+            <span>i</span>
+            <span>n</span>
+            <span>s</span>
+        </h1>
+
+        <div class="row">
+            <div class="image">
+                <img src="{{url_for('static', filename='img/london.jpg')}}" alt="Book trains" style="border-radius: 1rem; width: 100%;">
+            </div>
+
+            <form action="/trains/details" method="POST">
+                <div class="inputBox">
+                    <h3>From: </h3>
+                    <input type="text" name="origin" list="cities" placeholder="Origin City" required>
+                </div>
+                <div class="inputBox">
+                    <h3>To: </h3>
+                    <input type="text" name="destination" list="cities" placeholder="Destination City" required>
+                </div>
+                <div class="inputBox">
+                    <h3>Travel Date: </h3>
+                    <input type="date" name="travel_date" required>
+                </div>
+                <input type="submit" value="Check Availability" class="btn">
+            </form>
+        </div>
+    </section>
+
+    {% include 'cities.html' %}
+
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+</body>
+</html>
