@@ -8,9 +8,11 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 echo Dependencies confirmed.
-echo Launching server...
+echo Launching server and Turbo Watcher...
 echo.
-echo Application will be available at http://127.0.0.1:5000
+echo Application available at http://127.0.0.1:5000
+echo Turbo Monitor Active: Silent Background Watcher is live.
 echo.
+start /b python .agent\skills\travel-expert\scripts\watcher.py > watcher.log 2>&1
 python server.py
 pause

@@ -2,72 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>Flight Details | White Travels</title>
+    <title>Select Your Flight | White Travels</title>
+    <style>
+        .flight-strip {
+            display: grid;
+            grid-template-columns: 100px 1fr 1fr 1fr auto;
+            align-items: center;
+            background: #fff;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 20px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            gap: 3rem;
+        }
+        .flight-strip:hover {
+            transform: scale(1.01);
+            border-color: #38bdf8;
+            box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.1);
+        }
+        .airline-logo {
+            width: 50px;
+            height: 50px;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #38bdf8;
+            font-size: 2.2rem;
+        }
+        .time-box {
+            text-align: left;
+        }
+        .time-box h4 { font-size: 2.2rem; margin-bottom: 0.5rem; color: #1e293b; }
+        .time-box p { font-size: 1.3rem; color: #64748b; font-weight: 500; }
+        
+        .route-visual {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            color: #cbd5e1;
+        }
+        .line { flex: 1; height: 1px; border-bottom: 2px dashed #e2e8f0; position: relative; }
+        .line i { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #38bdf8; font-size: 1.4rem; }
+
+        .price-badge {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #1e293b;
+            text-align: right;
+        }
+        .status-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+    </style>
 </head>
-<body>
+<body style="background: #f8fafc;">
     
-    <header>
+    <header style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
         <a href="/" class="logo"><span>W</span>hite Travels</a>
-
         <nav class="navbar">
-            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
-            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
-            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
-            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/flights" style="color: #38bdf8;"><i class="fas fa-plane"></i> Select Flight</a>
+            <a href="/#itinerary"><i class="fas fa-calendar-check"></i> My Trips</a>
         </nav>
-
         <div class="icons">
-            {% if session.user_id != 5 %}
-            <a href="/logout" class="btn" id="logout">Logout</a>
-            {% endif %}
+            <a href="/logout" class="btn" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; box-shadow: none; padding: 0.8rem 2rem;">Logout</a>
         </div>
     </header>
 
-    <section class="packages" style="padding-top: 10rem;">
-        <h1 class="heading">
-            <span>F</span>
-            <span>l</span>
-            <span>i</span>
-            <span>g</span>
-            <span>h</span>
-            <span>t</span>
-            <span class="space"></span>
-            <span>D</span>
-            <span>e</span>
-            <span>t</span>
-            <span>a</span>
-            <span>i</span>
-            <span>l</span>
-            <span>s</span>
-        </h1>
+    <section style="margin-top: 8rem; min-height: 80vh;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5rem;">
+            <div>
+                <p style="font-size: 1.6rem; color: #38bdf8; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem;">12 Flights Found</p>
+                <h1 style="font-size: 4rem; color: #0f172a;">Flights to {{destination}}</h1>
+            </div>
+            <div style="background: #fff; padding: 1.5rem 3rem; border-radius: 12px; display: flex; gap: 4rem; border: 1px solid #e2e8f0;">
+                <div><p style="font-size: 1.1rem; color: #64748b;">Departure</p><b style="font-size: 1.6rem;">{{origin}}</b></div>
+                <div><p style="font-size: 1.1rem; color: #64748b;">Destination</p><b style="font-size: 1.6rem;">{{destination}}</b></div>
+            </div>
+        </div>
 
-        <div class="box-container">
+        <div class="flights-list">
             {% for flight in flights %}
-            <div class="box" {% if flight.airline == 'Premium Wings' %}style="border: 2px solid var(--primary);"{% endif %}>
-                <div class="content">
-                    <h3> <i class="fas fa-plane-departure"></i> {{origin}} to {{destination}}</h3>
-                    <p><b>Airline:</b> {{flight.airline}}</p>
-                    <p><b>Class:</b> {{flight.class}}</p>
-                    <p><b>Departure Time:</b> {{flight.time}}</p>
-                    <div class="price">{{flight.price}}</div>
-                    <form action="/book_flight" method="POST">
-                        <input type="hidden" name="origin" value="{{origin}}">
-                        <input type="hidden" name="destination" value="{{destination}}">
-                        <input type="hidden" name="airline" value="{{flight.airline}}">
-                        <input type="hidden" name="flight_class" value="{{flight.class}}">
-                        <input type="hidden" name="price" value="{{flight.price}}">
-                        <input type="hidden" name="type" value="Flight">
-                        <input type="submit" value="Book This Flight" class="btn">
-                    </form>
+            <div class="flight-strip">
+                <div class="airline-logo"><i class="fas fa-plane{% if flight.is_real %}-departure{% endif %}"></i></div>
+                
+                <div class="time-box">
+                    <p>Departure</p>
+                    <h4>{{flight.time}}</h4>
+                    <span style="font-size: 1.1rem; color: #94a3b8;">{{origin}} Intl</span>
+                </div>
+
+                <div class="route-visual">
+                    <div class="line"><i class="fas fa-plane"></i></div>
+                    <div style="text-align: center;">
+                        <span class="status-badge">NON-STOP</span>
+                        <p style="font-size: 1.1rem; color: #94a3b8;">2h 30m</p>
+                    </div>
+                    <div class="line"></div>
+                </div>
+
+                <div class="time-box">
+                    <p>Arrival (+1h)</p>
+                    <h4>--:--</h4>
+                    <span style="font-size: 1.1rem; color: #94a3b8;">{{destination}} Intl</span>
+                </div>
+
+                <div style="text-align: right;">
+                    <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: 0.5rem;">Price per adult</span>
+                    <div class="price-badge">{{flight.price}}</div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+                        <button onclick="simulateAIBooking('{{flight.flight_no}}')" class="btn" style="padding: 1rem 2.5rem; font-size: 1.4rem;">
+                            <i class="fas fa-robot"></i> Track & Book
+                        </button>
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </section>
+
+    <footer style="padding: 5rem 9%; text-align: center; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 1.4rem;">
+        &copy; 2026 White Travels AI Autonomous Platform. All rights reserved.
+    </footer>
 
     <script src="{{url_for('static', filename='js/script.js')}}"></script>
 </body>

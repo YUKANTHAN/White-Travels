@@ -2,116 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>Hotel Payment & Details | White Travels</title>
+    <title>Select Accommodation | White Travels</title>
+    <style>
+        .hotel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(35rem, 1fr));
+            gap: 3rem;
+        }
+        .hotel-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+        .hotel-card:hover { border-color: #38bdf8; transform: translateY(-5px); }
+        .hotel-img {
+            height: 22rem;
+            background: #f1f5f9;
+            position: relative;
+        }
+        .hotel-content { padding: 2.5rem; flex: 1; display: flex; flex-direction: column; }
+        .rating { color: #f59e0b; font-size: 1.4rem; margin-bottom: 1rem; }
+        .hotel-name { font-size: 2.22rem; color: #0f172a; margin-bottom: 1rem; }
+        .amenity-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #f1f5f9;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .price-section {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid #f1f5f9;
+        }
+    </style>
 </head>
-<body>
+<body style="background: #f8fafc;">
     
-    <header>
+    <header style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
         <a href="/" class="logo"><span>W</span>hite Travels</a>
-
         <nav class="navbar">
-            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
-            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
-            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
-            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/hotels" style="color: #38bdf8;"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/#support"><i class="fas fa-headset"></i> Support</a>
         </nav>
-
         <div class="icons">
-            {% if session.user_id != 5 %}
-            <a href="/logout" class="btn" id="logout">Logout</a>
-            {% endif %}
+            <a href="/logout" class="btn" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; box-shadow: none; padding: 0.8rem 2rem;">Logout</a>
         </div>
     </header>
 
-    <section class="book" style="padding-top: 10rem;">
-        <h1 class="heading">
-            <span>H</span>
-            <span>o</span>
-            <span>t</span>
-            <span>e</span>
-            <span>l</span>
-            <span class="space"></span>
-            <span>P</span>
-            <span>a</span>
-            <span>y</span>
-            <span>m</span>
-            <span>e</span>
-            <span>n</span>
-            <span>t</span>
-        </h1>
+    <section style="margin-top: 8rem; min-height: 80vh;">
+        <div style="margin-bottom: 5rem;">
+            <p style="font-size: 1.6rem; color: #38bdf8; font-weight: 600; text-transform: uppercase;">Top Rated Stays</p>
+            <h1 style="font-size: 4rem; color: #0f172a;">Hotels in {{destination}}</h1>
+        </div>
 
-        <div class="box-container" style="display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 3rem;">
+        <div class="hotel-grid">
             {% for hotel in hotels %}
-            <div class="box" style="flex: 1 1 30rem; padding: 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);">
-                <div class="content">
-                    <h3> <i class="fas fa-hotel"></i> {{hotel.name}}</h3>
-                    <p><b>Rating:</b> {{hotel.stars}} <i class="fas fa-star" style="color: gold;"></i></p>
-                    <p><b>Description:</b> {{hotel.description}}</p>
-                    <div class="price" style="font-size: 2rem; color: var(--primary); margin: 1rem 0;">{{hotel.price}} / night</div>
-                    <button class="btn" onclick="selectHotel('{{hotel.name}}', '{{hotel.price}}')">Select This Hotel</button>
+            <div class="hotel-card">
+                <div class="hotel-img">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                    <div style="position: absolute; top: 2rem; right: 2rem; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 1.2rem;">
+                        <i class="fas fa-heart"></i> Featured
+                    </div>
+                </div>
+                <div class="hotel-content">
+                    <div class="rating">
+                        {% for i in range(hotel.stars) %}
+                        <i class="fas fa-star"></i>
+                        {% endfor %}
+                        <span style="color: #64748b; margin-left: 0.5rem;">(4.8 / 5.0)</span>
+                    </div>
+                    <h3 class="hotel-name">{{hotel.name}}</h3>
+                    <p style="font-size: 1.4rem; color: #64748b; margin-bottom: 2rem; line-height: 1.6;">{{hotel.description}}</p>
+                    <div style="margin-bottom: 2rem;">
+                        <span class="amenity-tag">Free WiFi</span>
+                        <span class="amenity-tag">Breakfast</span>
+                        <span class="amenity-tag">Pool</span>
+                        <span class="amenity-tag">AC</span>
+                    </div>
+                    <div class="price-section">
+                        <div>
+                            <span style="font-size: 1.2rem; color: #64748b;">Starts from</span>
+                            <div style="font-size: 2.6rem; font-weight: 700; color: #0f172a;">{{hotel.price}}<span style="font-size: 1.4rem; font-weight: 400; color: #64748b;"> / night</span></div>
+                        </div>
+                        <form action="/book_hotel" method="POST">
+                            <input type="hidden" name="name" value="{{hotel.name}}">
+                            <input type="hidden" name="price" value="{{hotel.price}}">
+                            <button class="btn" style="padding: 1.2rem 2.5rem; font-size: 1.4rem;">Check Rooms</button>
+                        </form>
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-
-        <div id="payment-section" style="display: none; background: #fff; padding: 3rem; border-radius: 1rem; box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1);">
-            <form action="/book_hotel" method="POST">
-                <h3 style="font-size: 2.5rem; color: var(--primary); margin-bottom: 2rem;">Payment & Booking for <span id="selected-hotel-name"></span></h3>
-                
-                <div class="inputBox" style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.8rem;">Card Holder Name: </h3>
-                    <input type="text" name="card_name" placeholder="Name on Card" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
-                </div>
-                <div class="inputBox" style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.8rem;">Card Number: </h3>
-                    <input type="text" name="card_number" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
-                </div>
-                <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
-                    <div class="inputBox" style="flex: 1;">
-                        <h3 style="font-size: 1.8rem;">Expiry: </h3>
-                        <input type="text" name="expiry" placeholder="MM/YY" maxlength="5" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
-                    </div>
-                    <div class="inputBox" style="flex: 1;">
-                        <h3 style="font-size: 1.8rem;">CVV: </h3>
-                        <input type="password" name="cvv" placeholder="123" maxlength="3" style="width: 100%; padding: 1.2rem; border: .2rem solid rgba(0,0,0,.1); border-radius: .5rem; font-size: 1.6rem;" required>
-                    </div>
-                </div>
-                
-                <h3 style="font-size: 2.22rem; color: var(--primary); margin: 2rem 0 1.5rem;">Payment Method</h3>
-                <div class="inputBox" style="display: flex; gap: 2rem; align-items: center; border: .1rem solid rgba(0,0,0,.1); padding: 1.5rem; border-radius: .5rem; margin-bottom: 2rem;">
-                    <label style="font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; gap: 1rem;">
-                        <input type="radio" name="payment_method" value="Credit Card" checked style="width: auto;"> <i class="fab fa-cc-visa"></i> Visa/Master
-                    </label>
-                    <label style="font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; gap: 1rem;">
-                        <input type="radio" name="payment_method" value="PayPal" style="width: auto;"> <i class="fab fa-paypal"></i> PayPal
-                    </label>
-                </div>
-
-                <input type="hidden" name="destination" value="{{destination}}">
-                <input type="hidden" name="hotel_name" id="hidden-hotel-name">
-                <input type="hidden" name="price" id="hidden-hotel-price">
-                <input type="hidden" name="type" value="Hotel">
-                <input type="submit" value="Pay & Book Now" class="btn" style="width: 100%;">
-            </form>
-        </div>
-
-        <script>
-            function selectHotel(name, price) {
-                document.getElementById('payment-section').style.display = 'block';
-                document.getElementById('selected-hotel-name').innerText = name;
-                document.getElementById('hidden-hotel-name').value = name;
-                document.getElementById('hidden-hotel-price').value = price;
-                window.scrollTo({
-                    top: document.getElementById('payment-section').offsetTop - 100,
-                    behavior: 'smooth'
-                });
-            }
-        </script>
     </section>
+
+    <footer style="padding: 5rem 9%; text-align: center; color: #94a3b8; font-size: 1.4rem; border-top: 1px solid #e2e8f0;">
+        &copy; 2026 White Travels Hospitality Network. Verified Listings.
+    </footer>
 
     <script src="{{url_for('static', filename='js/script.js')}}"></script>
 </body>

@@ -27,6 +27,7 @@
             <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
             <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
             <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="javascript:void(0)" onclick="toggleAIAssistant()" style="color: #fbbf24; font-weight: bold;"><i class="fas fa-robot"></i> AI Assistant</a>
             <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
         </nav>
 
@@ -35,25 +36,34 @@
                 <i class="fas fa-bell" id="notification-btn" style="cursor: pointer; position: relative;">
                     <span style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold;">2</span>
                 </i>
-                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 350px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
-                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-robot"></i> AI Travel Alerts</h3>
+                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 450px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
+                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-shield-alt"></i> Disruption Command Center</h3>
                     
-                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
-                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-plane-slash" style="color: red;"></i> Flight UA-402 Cancelled</b></p>
-                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Severe Weather</p>
-                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
-                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
-                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Flight DL-890 (Departs 2h later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid #e11d48; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-exclamation-triangle" style="color: #e11d48;"></i> CRITICAL: Flight UA-402 Cancelled</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 0.5rem;">Reason: Severe storm at destination. <span style="color: #e11d48; font-weight: bold;">[Critical Conflict: 4PM Board Meeting]</span></p>
+                        
+                        <p style="font-size: 1.3rem; margin: 1rem 0 0.5rem 0; font-weight: bold; color: var(--primary);">I have analyzed the alternatives:</p>
+                        
+                        <div class="pathway" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.8rem; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 1.2rem; color: #1e293b;"><b>Pathway A: The Fastest</b></p>
+                            <p style="font-size: 1.1rem; color: #64748b;">Lufthansa LH-12 (Departs 19:30). Arrives 22:00. <a href="javascript:void(0)" onclick="simulateConfirm('Pathway A')" style="color: var(--primary); font-weight: bold;">Confirm</a></p>
+                        </div>
+
+                        <div class="pathway" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.8rem; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 1.2rem; color: #1e293b;"><b>Pathway B: Most Comfortable</b></p>
+                            <p style="font-size: 1.1rem; color: #64748b;">Emirates EK-50 (Priority Lounge access). <a href="javascript:void(0)" onclick="simulateConfirm('Pathway B')" style="color: var(--primary); font-weight: bold;">Confirm</a></p>
+                        </div>
+
+                        <div class="pathway" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 1.2rem; color: #1e293b;"><b>Pathway C: The Pivot</b></p>
+                            <p style="font-size: 1.1rem; color: #64748b;">Marriott City Center Stay + Flight tomorrow 09:00. <a href="javascript:void(0)" onclick="simulateConfirm('Pathway C')" style="color: var(--primary); font-weight: bold;">Confirm</a></p>
                         </div>
                     </div>
 
-                    <div class="alert-item" style="padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
-                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-train" style="color: red;"></i> Train MX-112 Cancelled</b></p>
-                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Track Maintenance</p>
-                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
-                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
-                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Express Train 901 (Departs 45m later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
-                        </div>
+                    <div class="alert-item" style="padding: 1rem; background: #fffbeb; border-left: 4px solid #d97706; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-clock" style="color: #d97706;"></i> MAJOR: Train MX-112 Delayed (3h)</b></p>
+                        <p style="font-size: 1.2rem; color: #666;">Weather-grounded for 24h. I recommend transitioning to Hotel booking. <a href="#" style="color: var(--primary); font-weight: bold;">View Analysis</a></p>
                     </div>
                 </div>
             </div>
@@ -81,8 +91,8 @@
             });
         </script>
 
-        <form action="" method="post" class="search-bar-container">
-            <input type="search" id="search-bar" placeholder="search here...">
+        <form action="javascript:void(0)" onsubmit="headerSearch(event)" class="search-bar-container">
+            <input type="search" id="search-bar" placeholder="Enter destination (e.g. Cabo, Tokyo)...">
             <label for="search-bar" class="fas fa-search"></label>
         </form>
     </header>
@@ -355,50 +365,111 @@
 
         </div>
     </section>
-    <!-- AI DISRUPTION RECOVERY SECTION (MMT + Siri Hybrid) -->
-    <section class="ai-recovery" id="ai-recovery" style="background: var(--section-bg); padding-top: 5rem;">
-        <h1 class="heading">
-            <span>A</span>
-            <span>I</span>
-            <span class="space"></span>
-            <span>R</span>
-            <span>e</span>
-            <span>c</span>
-            <span>o</span>
+    <!-- AI DISRUPTION RECOVERY SECTION (HACKATHON EDITION) -->
+    <!-- WORKSPACE SKILL: TRAVEL EXPERT LIVE MONITORING -->
+    <section class="travel-expert-monitor" id="travel-expert-monitor" style="background: #020617; padding: 10rem 2rem; color: #fff; overflow: hidden; position: relative;">
+        <!-- Background Accents -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.05) 0%, transparent 50%), radial-gradient(circle at 90% 90%, rgba(225, 29, 72, 0.05) 0%, transparent 50%); border-top: 1px solid #1e293b;"></div>
+
+        <h1 class="heading" style="margin-bottom: 6rem;">
+            <span style="color: #38bdf8;">T</span>
+            <span>r</span>
+            <span>a</span>
             <span>v</span>
             <span>e</span>
+            <span>l</span>
+            <span class="space"></span>
+            <span style="color: #38bdf8;">E</span>
+            <span>x</span>
+            <span>p</span>
+            <span>e</span>
             <span>r</span>
-            <span>y</span>
+            <span>t</span>
         </h1>
-        
-        <div class="row" style="display: flex; flex-wrap: wrap; gap: 2rem;">
-            <!-- Simulation Trigger -->
-            <div class="simulator-card" style="flex: 1 1 30rem; background: #fff; padding: 2rem; border-radius: 1rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,0.05);">
-                <h3 style="font-size: 2rem; color: var(--accent); margin-bottom: 1.5rem;">Disruption Simulator</h3>
-                <p style="font-size: 1.4rem; color: var(--text-muted); margin-bottom: 2rem;">Simulate a real-time travel disruption to see the White Travels AI Agent in action.</p>
-                <button onclick="triggerDisruption('FL202')" class="btn" style="width: 100%; margin-bottom: 1rem; background: #dc3545; border-color: #dc3545;">Simulate Flight Cancellation (FL202)</button>
-                <button onclick="triggerDisruption('FL101')" class="btn" style="width: 100%; background: var(--accent); border-color: var(--accent);">Simulate Delay (FL101)</button>
+
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr)); gap: 4rem; position: relative; z-index: 1;">
+            
+            <!-- Itinerary Live Card -->
+            <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); padding: 5rem; border-radius: 2.5rem; border: 1px solid #1e293b; box-shadow: 0 2rem 5rem rgba(0,0,0,0.4); position: relative;">
+                <div style="position: absolute; top: 3rem; right: 3rem; padding: .6rem 1.5rem; background: #020617; border: 1px solid #38bdf8; border-radius: 2rem; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">PNR LIVE ASSET</div>
+                
+                <h3 style="font-size: 3rem; margin-bottom: 3rem; color: #f8fafc;"><i class="fas fa-ticket-alt" style="color: #38bdf8;"></i> Active Itinerary</h3>
+                
+                <div id="itinerary-live-box" style="margin-bottom: 4rem; padding: 3rem; background: #020617; border-radius: 1.5rem; border-left: 5px solid #38bdf8;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">FLIGHT NO</span>
+                        <b id="itinerary-flight" style="font-size: 2.2rem; color: #fff;">FL202</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">STATUS</span>
+                        <b id="itinerary-status" style="font-size: 1.8rem; color: #10b981; padding: .4rem 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: .5rem;">CONFIRMED</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">ASSET ID (PNR)</span>
+                        <b id="itinerary-pnr" style="font-size: 1.8rem; color: #fff;">ABC123</b>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 2rem;">
+                    <button onclick="triggerSkillDisruption()" class="btn" style="flex: 2; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Simulate Disruption</button>
+                    <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
             </div>
 
-            <!-- Real-time SSE Logs -->
-            <div class="log-terminal" style="flex: 2 1 50rem; background: #001A33; color: #00FF41; font-family: 'Courier New', monospace; padding: 1.5rem; border-radius: 1rem; height: 300px; overflow-y: auto; font-size: 1.2rem;">
-                <div id="ai-logs">
-                    <span style="color: #fff;">[SYSTEM]: Standing by for disruption event...</span>
+            <!-- Agent Reasoning Cluster -->
+            <div style="display: grid; gap: 3rem;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 2.5rem; border: 1px solid #1e293b; position: relative; min-height: 400px; display: flex; flex-direction: column;">
+                    <h3 style="font-size: 2.22rem; color: #38bdf8; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1.5rem;">
+                        <i class="fas fa-robot"></i> Workspace Skill Log
+                    </h3>
+                    
+                    <div id="skill-reasoning-log" style="flex: 1; background: #020617; border-radius: 1rem; padding: 2.5rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 1.3rem; color: #38bdf8; line-height: 1.8; overflow-y: auto;">
+                        <p style="color: #475569;">// Waiting for itinerary.json change...</p>
+                        <p style="color: #475569;">// Skill [travel-expert] Indexed.</p>
+                    </div>
+
+                    <div style="margin-top: 2.5rem; padding: 2rem; background: rgba(56, 189, 248, 0.05); border-radius: 1rem; border-left: 4px solid #38bdf8;">
+                        <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: .8rem;">AUTONOMOUS ACTION DETECTED</h4>
+                        <p id="skill-action-desc" style="font-size: 1.2rem; color: #94a3b8;">Listening for flight cancellations in your workspace...</p>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Final Plan Modal (Hidden by default) -->
-        <div id="recovery-plan" style="display: none; margin-top: 3rem; padding: 2rem; border: 2px solid var(--primary); border-radius: 1rem; background: #fff;">
-            <h2 style="font-size: 2.2rem; color: var(--primary);"><i class="fas fa-magic"></i> Autonomous Recovery Plan</h2>
-            <div id="plan-details" style="margin: 1.5rem 0; font-size: 1.6rem;"></div>
-            <div id="plan-confidence" style="font-weight: bold; margin-bottom: 1rem;"></div>
-            <div id="plan-reason" style="margin-left: 2rem; font-style: italic; color: var(--text-muted);"></div>
-            <div id="plan-alternatives" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee; font-size: 1.4rem; color: #666;"></div>
-            <button onclick="confirmPlan()" class="btn" style="margin-top: 1rem;">Confirm & Re-Book</button>
-        </div>
     </section>
 
+    <!-- PREMIUM AI CHAT WIDGET (DEEP CONCIERGE) -->
+    <div id="ai-chat-widget" style="position: fixed; bottom: 3rem; right: 3rem; z-index: 10000; display: flex; flex-direction: column; align-items: flex-end;">
+        <div id="ai-chat-window" style="display: none; width: 380px; height: 500px; background: #fff; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 2rem; overflow: hidden; border: 1px solid #f1f5f9; flex-direction: column;">
+            <div style="background: #0f172a; padding: 2rem; color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></div>
+                    <h3 style="font-size: 1.8rem;">Deep Concierge</h3>
+                </div>
+                <i class="fas fa-times" onclick="toggleAIChat()" style="cursor: pointer; font-size: 1.6rem;"></i>
+            </div>
+            <div id="ai-chat-body" style="flex: 1; padding: 2rem; overflow-y: auto; background: #f8fafc; font-size: 1.4rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="align-self: flex-start; background: #fff; padding: 1rem 1.5rem; border-radius: 15px 15px 15px 0; border: 1px solid #e2e8f0; max-width: 85%;">
+                    Hello! I'm your Deep Concierge. I'm monitoring your workspace in real-time. How can I assist with your journey today?
+                </div>
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid #f1f5f9; display: flex; gap: 1rem; background: #fff;">
+                <input type="text" id="ai-chat-input" placeholder="Ask about weather, flights, or rebooking..." style="flex: 1; padding: 1.2rem; border-radius: 10px; background: #f1f5f9; font-size: 1.4rem;">
+                <button onclick="sendAIChat()" style="background: #38bdf8; color: #fff; width: 4.5rem; height: 4.5rem; border-radius: 10px; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        <div onclick="toggleAIChat()" style="width: 7rem; height: 7rem; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2.5rem; cursor: pointer; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4); border: 4px solid #fff;">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+    </div>
     <script src="{{url_for('static', filename='js/script.js')}}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(document.getElementById('ai-assistant-dashboard')) {
+                updateAssistantContext();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -18,32 +18,37 @@
             <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
             <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
             <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="javascript:void(0)" onclick="toggleAIAssistant()" style="color: #fbbf24; font-weight: bold;"><i class="fas fa-robot"></i> AI Assistant</a>
             <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
         </nav>
 
         <div class="icons" style="display: flex; align-items: center; gap: 1.5rem;">
             <div class="notification-container" style="position: relative; display: inline-block;">
                 <i class="fas fa-bell" id="notification-btn" style="cursor: pointer; position: relative;">
-                    <span style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold;">2</span>
+                    <span style="position: absolute; top: -8px; right: -8px; background: #e11d48; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold; box-shadow: 0 0 .5rem rgba(225,29,72,0.5);">2</span>
                 </i>
-                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 350px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
-                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-robot"></i> AI Travel Alerts</h3>
+                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 450px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
+                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-shield-alt"></i> Disruption Command Center</h3>
                     
-                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
-                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-plane-slash" style="color: red;"></i> Flight UA-402 Cancelled</b></p>
-                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Severe Weather</p>
-                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
-                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
-                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Flight DL-890 (Departs 2h later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid #e11d48; border-radius: 0.5rem;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-exclamation-triangle" style="color: #e11d48;"></i> CRITICAL: Flight UA-402 Cancelled</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 0.5rem;">Reason: Severe storm at destination. <span style="color: #e11d48; font-weight: bold;">[Critical Conflict: 4PM Board Meeting]</span></p>
+                        
+                        <p style="font-size: 1.3rem; margin: 1rem 0 0.5rem 0; font-weight: bold; color: var(--primary);">I have analyzed the alternatives:</p>
+                        
+                        <div class="pathway" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.8rem; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 1.2rem; color: #1e293b;"><b>Pathway A: The Fastest</b></p>
+                            <p style="font-size: 1.1rem; color: #64748b;">Lufthansa LH-12 (Departs 19:30). Arrives 22:00. <a href="javascript:void(0)" onclick="simulateConfirm('Pathway A')" style="color: var(--primary); font-weight: bold;">Confirm</a></p>
                         </div>
-                    </div>
 
-                    <div class="alert-item" style="padding: 1rem; background: #fff5f5; border-left: 4px solid red; border-radius: 0.5rem;">
-                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-train" style="color: red;"></i> Train MX-112 Cancelled</b></p>
-                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">Reason: Track Maintenance</p>
-                        <div style="background: #f0fdf4; padding: 0.8rem; border-radius: 0.5rem; border: 1px solid #bbf7d0;">
-                            <p style="font-size: 1.2rem; color: #166534;"><b><i class="fas fa-magic"></i> AI Rebooked Alternative:</b></p>
-                            <p style="font-size: 1.2rem; color: #15803d; margin-top: 0.3rem;">Express Train 901 (Departs 45m later)<br><a href="#" style="color: var(--primary); text-decoration: underline; font-weight: bold; margin-top: 0.5rem; display: inline-block;">View Details / Confirm</a></p>
+                        <div class="pathway" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.8rem; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 1.2rem; color: #1e293b;"><b>Pathway B: Most Comfortable</b></p>
+                            <p style="font-size: 1.1rem; color: #64748b;">Emirates EK-50 (Priority Lounge access). <a href="javascript:void(0)" onclick="simulateConfirm('Pathway B')" style="color: var(--primary); font-weight: bold;">Confirm</a></p>
+                        </div>
+
+                        <div class="pathway" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 1.2rem; color: #1e293b;"><b>Pathway C: The Pivot</b></p>
+                            <p style="font-size: 1.1rem; color: #64748b;">Marriott City Center Stay + Flight tomorrow 09:00. <a href="javascript:void(0)" onclick="simulateConfirm('Pathway C')" style="color: var(--primary); font-weight: bold;">Confirm</a></p>
                         </div>
                     </div>
                 </div>
@@ -54,6 +59,10 @@
             <a href="/logout" class="btn" id="logout" style="margin-left: auto;">Logout</a>
             {% endif %}
         </div>
+        <form action="javascript:void(0)" onsubmit="headerSearch(event)" class="search-bar-container">
+            <input type="search" id="search-bar" placeholder="Enter destination (e.g. Cabo, Tokyo)...">
+            <label for="search-bar" class="fas fa-search"></label>
+        </form>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 const notifBtn = document.getElementById('notification-btn');
