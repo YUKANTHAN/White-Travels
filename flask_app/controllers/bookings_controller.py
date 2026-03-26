@@ -46,18 +46,38 @@ def flight_search():
     display_flights = []
     
     if isinstance(real_flights, list) and len(real_flights) > 0:
-        for offer in real_flights: # Now iterating over all available results
-            itinerary = offer['itineraries'][0]
-            segment = itinerary['segments'][0]
-            display_flights.append({
-                'airline': segment['carrierCode'],
-                'flight_no': segment['carrierCode'] + segment['number'],
-                'time': segment['departure']['at'].split('T')[1][:5],
-                'price': f"${offer['price']['total']}",
-                'class': segment.get('cabin', 'Economy'),
-                'is_real': True
-            })
-    else:
+        for result in real_flights:
+            res_type = result['type']
+            offer = result['data']
+            
+            try:
+                if res_type == 'duffel':
+                    slice_data = offer['slices'][0]
+                    segment = slice_data['segments'][0]
+                    display_flights.append({
+                        'airline': segment.get('operating_carrier', {}).get('iata_code', 'XX'),
+                        'flight_no': segment.get('operating_carrier_flight_number', '000'),
+                        'time': segment.get('departing_at', '').split('T')[1][:5] if 'T' in segment.get('departing_at', '') else "--:--",
+                        'price': f"${offer.get('total_amount', '0.00')}",
+                        'class': "Economy",
+                        'is_real': True
+                    })
+                elif res_type == 'amadeus':
+                    itinerary = offer['itineraries'][0]
+                    segment = itinerary['segments'][0]
+                    display_flights.append({
+                        'airline': segment['carrierCode'],
+                        'flight_no': segment['carrierCode'] + segment['number'],
+                        'time': segment['departure']['at'].split('T')[1][:5],
+                        'price': f"${offer['price']['total']}",
+                        'class': segment.get('cabin', 'Economy'),
+                        'is_real': True
+                    })
+            except Exception as e:
+                print(f"[UI] Parsing error for {res_type}: {e}")
+                continue
+    
+    if not display_flights:
         # Dynamic Hackathon Mock fallback if API fails
         display_flights = [
             {'airline': 'SkyHigh Air', 'flight_no': 'AA101', 'time': '08:00 AM', 'price': '$450', 'class': 'Economy', 'is_real': False},
@@ -150,6 +170,17 @@ def create_simulated_booking():
     with open('itinerary.json', 'w') as f:
         json.dump([new_flight], f, indent=4)
     return jsonify({"success": True, "itinerary": new_flight})
+
+@app.route('/ai/plan', methods=['POST'])
+def ai_plan():
+    data = request.get_json()
+    dest = data.get('destination', 'Unknown')
+    date = data.get('date', 'TBD')
+    budget = str(data.get('budget', '0'))
+    companions = data.get('companions', 'Solo')
+    
+    plan_text = concierge.plan_trip(dest, date, budget, companions)
+    return jsonify({"plan": plan_text})
 
 @app.route('/ai/ask', methods=['POST'])
 def ai_ask():

@@ -125,8 +125,111 @@ async function triggerSkillDisruption() {
     } catch (err) { console.error("Disruption trigger failed:", err); }
 }
 
-// Event Listeners
+// --- QUICK BOOK (QB) MULTI-STEP LOGIC ---
+function nextQB(step) {
+    document.querySelectorAll('.qb-step').forEach(el => el.style.display = 'none');
+    const target = document.getElementById(`qb-step-${step}`);
+    if(target) target.style.display = 'block';
+}
+
+function closeQuickBook() {
+    document.getElementById('quick-book-modal').style.display = 'none';
+}
+
+function closeWelcomePopup() {
+    const modal = document.getElementById('welcome-onload-modal');
+    if(modal) {
+        modal.style.opacity = '0';
+        modal.querySelector('.welcome-modal-content').style.transform = 'translateY(20px)';
+        setTimeout(() => modal.style.display = 'none', 500);
+    }
+}
+
+async function generatePlan() {
+    const dest = document.getElementById('qb-destination').value;
+    const date = document.getElementById('qb-date').value;
+    const budget = document.getElementById('qb-budget').value;
+    const companions = document.getElementById('qb-companions').value;
+
+    if(!dest) return alert("Please enter a destination!");
+    
+    nextQB(5);
+    const planBox = document.getElementById('qb-plan-content');
+    planBox.innerHTML = "<div class='loader'></div> Reasoning with DeepSeek-Concierge...";
+
+    try {
+        const res = await fetch('/ai/plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destination: dest, date: date, budget: budget, companions: companions })
+        });
+        const data = await res.json();
+        
+        // Advanced markdown parsing for better UI presentation
+        let htmlPlan = data.plan
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<b style="color: var(--primary);">$1</b>')
+            .replace(/#### (.*?)(<br>|$)/g, '<h4 style="font-size: 1.8rem; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: .5rem; margin-top: 1rem; margin-bottom: 1rem;">$1</h4>')
+            .replace(/• (.*?)(<br>|$)/g, '<li style="margin-left: 2rem; margin-bottom: .5rem;">$1</li>');
+            
+        planBox.innerHTML = htmlPlan;
+    } catch(e) {
+        planBox.innerHTML = "Error generating plan. Please try again.";
+    }
+}
+
+function confirmQuickBook() {
+    alert("Trip Confirmed! Our AI Agent is now making arrangements for your flights and hotels. Check the monitoring dashboard for updates.");
+    closeQuickBook();
+    window.location.href = '/#travel-expert-monitor';
+}
+
+// UI Feature Listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Show Welcome Popup on load
+    const welcomeModal = document.getElementById('welcome-onload-modal');
+    if (welcomeModal && window.location.pathname === '/') {
+        welcomeModal.style.display = 'flex';
+        setTimeout(() => {
+            welcomeModal.style.opacity = '1';
+            const content = welcomeModal.querySelector('.welcome-modal-content');
+            if(content) content.style.transform = 'translateY(0)';
+        }, 100);
+    }
+
+    const loginBtn = document.querySelector('#login-btn');
+    const loginForm = document.querySelector('.login-form-container');
+    const formClose = document.querySelector('#form-close');
+    const searchBtn = document.querySelector('#search-btn');
+    const searchBar = document.querySelector('.search-bar-container');
+
+    if(loginBtn && loginForm) {
+        loginBtn.addEventListener('click', () => {
+            loginForm.classList.add('active');
+        });
+    }
+
+    if(formClose && loginForm) {
+        formClose.addEventListener('click', () => {
+            loginForm.classList.remove('active');
+        });
+    }
+
+    if(searchBtn && searchBar) {
+        searchBtn.addEventListener('click', () => {
+            searchBar.classList.toggle('active');
+        });
+    }
+
+    const qbTrigger = document.getElementById('quick-book-trigger');
+    if(qbTrigger) {
+        qbTrigger.addEventListener('click', () => {
+            document.getElementById('quick-book-modal').style.display = 'flex';
+            nextQB(1);
+        });
+    }
+
     if(document.getElementById('itinerary-live-box')) refreshItineraryStatus();
 });
 
