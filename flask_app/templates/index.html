@@ -444,7 +444,7 @@
                         <span class="te-row-label">VISA STATUS</span>
                         <b id="itinerary-visa" style="font-size: 1.7rem; color: #facc15;">---</b>
                     </div>
-                    <div id="itinerary-risk-monitor" style="border-top: 1px solid #1e293b; padding-top: 1.5rem;">
+                    <div id="itinerary-risk-monitor" style="border-top: 1px solid #1e293b; padding-top: 1.5rem; margin-bottom: 1.5rem;">
                         <span class="te-row-label">PREDICTIVE DISRUPTION RISK</span>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: .5rem;">
                             <div style="flex: 1; height: .8rem; background: #020617; border-radius: 1rem; position: relative; overflow: hidden; border: 1px solid #1e293b;">
@@ -453,10 +453,21 @@
                             <b id="itinerary-risk-label" style="font-size: 1.3rem; color: #10b981; margin-left:1.5rem;">LOW (SAFE)</b>
                         </div>
                     </div>
+
+                    <div id="itinerary-stress-monitor" style="border-top: 1px solid #1e293b; padding-top: 1.5rem;">
+                        <span class="te-row-label">TRAVELER EMOTIONAL STRESS (AI SENTIMENT)</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: .5rem;">
+                            <div style="flex: 1; height: .8rem; background: #020617; border-radius: 1rem; position: relative; overflow: hidden; border: 1px solid #1e293b;">
+                                <div id="itinerary-stress-bar" style="width: 5%; height: 100%; background: #38bdf8; transition: width 1s ease-in-out;"></div>
+                            </div>
+                            <b id="itinerary-stress-label" style="font-size: 1.3rem; color: #38bdf8; margin-left:1.5rem;">CALM / RELIEVED</b>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="te-button-row">
-                    <button onclick="triggerSkillDisruption()" class="btn" style="flex: 2; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
+                <div class="te-button-row" style="flex-wrap: wrap; gap: 1rem;">
+                    <button onclick="triggerSkillDisruption()" class="btn" style="flex: 1 1 100%; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
+                    <button onclick="triggerHotelSync()" class="btn" style="flex: 1; background: #4f46e5; border: none; font-size: 1.4rem;"><i class="fas fa-hotel"></i> AI Hotel Sync</button>
                     <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;" aria-label="Refresh status"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
 
@@ -837,6 +848,33 @@
         function showDisruptionModal(reason) {
             // Simplified for demo, could be a real modal
             alert("🚨 DISRUPTION DETECTED!\n\n" + reason + "\n\nWhite Travels AI is now rebooking your journey.");
+        }
+
+        async function triggerHotelSync() {
+            const log = document.getElementById('skill-reasoning-log');
+            const btn = document.querySelector('button[onclick="triggerHotelSync()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+            btn.disabled = true;
+
+            const steps = [
+                { msg: "Dialing Paris Grand Hotel Reception... [SIMULATED]", color: "#38bdf8" },
+                { msg: "Agent Identity Verified: White Travels AI Sentinel.", color: "#38bdf8" },
+                { msg: "Transmitting disruption metadata & recovery schedule...", color: "#38bdf8" },
+                { msg: "Negotiating check-in window shift (Reason: Weather)...", color: "#facc15" },
+                { msg: "SUCCESS: Hotel check-in time pushed to 10:30 PM (No extra charge).", color: "#10b981" }
+            ];
+
+            for (const step of steps) {
+                const p = document.createElement('p');
+                p.style.color = step.color;
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] <b>[HOTEL-BOT]:</b> ${step.msg}`;
+                log.prepend(p);
+                await new Promise(r => setTimeout(r, 900));
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
 
         document.addEventListener('DOMContentLoaded', () => {

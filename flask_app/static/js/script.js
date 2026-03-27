@@ -58,9 +58,23 @@ async function handleChatSubmit(e) {
         const data = await res.json();
         
         // --- PANIC MODE UI TRIGGER ---
+        const stressBar = document.getElementById('itinerary-stress-bar');
+        const stressLabel = document.getElementById('itinerary-stress-label');
+
         if (data.plan.includes("CRISIS specialist") || data.plan.includes("🆘")) {
             const statusDot = document.getElementById('itinerary-status');
             if (statusDot) statusDot.classList.add('pulse-red');
+            if (stressBar && stressLabel) {
+                stressBar.style.width = '100%';
+                stressBar.style.background = '#e11d48';
+                stressLabel.innerText = 'HIGH STRESS (CRITICAL)';
+                stressLabel.style.color = '#e11d48';
+            }
+        } else if (stressBar && stressLabel) {
+            stressBar.style.width = '5%';
+            stressBar.style.background = '#38bdf8';
+            stressLabel.innerText = 'CALM / RELIEVED';
+            stressLabel.style.color = '#38bdf8';
         }
 
         appendChatMessage('ai', "I have orchestrated your master plan. You can view it below the chat box in the Travel Expert section!");
