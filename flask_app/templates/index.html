@@ -127,7 +127,7 @@
         <div class="content">
             <h3>Adventure is Worthwhile</h3>
             <p>Discover new places with us, adventure awaits</p>
-            <a href="#" class="btn">Discover More</a>
+            <a href="javascript:void(0)" onclick="toggleChat()" class="btn">Discover More</a>
         </div>
 
         <div class="photo-container">
@@ -136,18 +136,135 @@
     </section>
     <!-- booking section starts  -->
 
-    <section class="book" id="book">
-        <!-- welcome message  -->
-        {% if session.user_id != 5 %}
-        <h1 class="welcome">Welcome {{user.first_name}}!</h1>
-        {% endif %}
-        
+    </section>
+    <!-- home ends -->
+
+    <!-- ADVANCED CHAT MODAL -->
+    <div id="ai-chat-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10005; align-items: center; justify-content: center;">
+        <div id="chat-backdrop" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(15px); transition: 0.5s;"></div>
+        <div id="chat-box-container" style="background: rgba(2, 6, 23, 0.95); width: 60rem; height: 80rem; border-radius: 3rem; border: 1px solid #38bdf8; overflow: hidden; position: relative; z-index: 10; box-shadow: 0 5rem 10rem rgba(0,0,0,0.8); display: flex; flex-direction: column;">
+            <div style="padding: 3rem; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 1rem; height: 1rem; background: #10b981; border-radius: 50%; box-shadow: 0 0 1rem #10b981;"></div>
+                    <h3 style="font-size: 2.2rem; color: #fff;"><i class="fas fa-robot"></i> Deep Concierge AI</h3>
+                </div>
+                <i class="fas fa-times" onclick="toggleChat()" style="font-size: 2.5rem; color: #94a3b8; cursor: pointer;"></i>
+            </div>
+
+            <div id="chat-messages" style="flex: 1; padding: 3rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem;">
+                <div class="ai-msg" style="align-self: flex-start; background: #1e293b; padding: 2rem; border-radius: 2rem 2rem 2rem 0; color: #fff; font-size: 1.5rem; max-width: 80%;">
+                    Hello! I am your Autonomous Travel Specialist. How can I orchestration your journey today?
+                </div>
+            </div>
+
+            <div id="chat-suggestions" style="padding: 2rem 3rem; display: flex; flex-wrap: wrap; gap: 1rem; background: rgba(56, 189, 248, 0.05);">
+                <span onclick="chatSuggestion('Plan my trip to Paris')" style="padding: .8rem 1.5rem; border: 1px solid #38bdf8; color: #38bdf8; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">Plan Paris Trip</span>
+                <span onclick="chatSuggestion('Check my Visa Status')" style="padding: .8rem 1.5rem; border: 1px solid #facc15; color: #facc15; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">Check Visa</span>
+                <span onclick="chatSuggestion('Eco-friendly options?')" style="padding: .8rem 1.5rem; border: 1px solid #10b981; color: #10b981; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">Eco Options</span>
+                <span onclick="chatSuggestion('Show my tickets')" style="padding: .8rem 1.5rem; border: 1px solid #fff; color: #fff; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">My Tickets</span>
+            </div>
+
+            <div style="padding: 3rem; background: #0f172a; border-top: 1px solid #1e293b;">
+                <form onsubmit="handleChatSubmit(event)" style="display: flex; gap: 1.5rem;">
+                    <input id="chat-input" type="text" placeholder="Tell me your destination or query..." style="flex: 1; background: #020617; border: 1px solid #334155; padding: 1.5rem 2.5rem; border-radius: 1.5rem; color: #fff; font-size: 1.6rem;">
+                    <button type="submit" class="btn" style="padding: 1rem 2.5rem;"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRAVEL EXPERT DATA HUB SECTION -->
+    <section id="travel-expert-monitor" style="padding: 10rem 7%;">
         <h1 class="heading">
-            <span>b</span>
-            <span>o</span>
-            <span>o</span>
-            <span>k</span>
+            <span>t</span>
+            <span>r</span>
+            <span>a</span>
+            <span>v</span>
+            <span>e</span>
+            <span>l</span>
             <span class="space"></span>
+            <span>e</span>
+            <span>x</span>
+            <span>p</span>
+            <span>e</span>
+            <span>r</span>
+            <span>t</span>
+        </h1>
+
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; margin-top: 5rem;">
+            
+            <!-- LEFT: TICKET DISPLAY -->
+            <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-radius: 3rem; border: 1px solid #1e293b; padding: 4rem;">
+                <h3 style="font-size: 2.5rem; color: #f8fafc; margin-bottom: 3rem;"><i class="fas fa-plane-arrival"></i> Booked Tickets</h3>
+                
+                <div id="itinerary-live-box" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div style="padding: 2.5rem; background: #020617; border-radius: 2rem; border-left: 6px solid #38bdf8;">
+                        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <span id="itinerary-passenger" style="font-size: 1.8rem; color: #f59e0b; font-weight: bold;">---</span>
+                            <span id="itinerary-pnr" style="font-size: 1.2rem; color: #38bdf8; font-family: monospace;">#PNR-LIVE</span>
+                        </div>
+                        <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <span style="font-size: 1.2rem; color: #64748b;">FLIGHT</span>
+                                <b id="itinerary-flight" style="display:block; font-size: 1.8rem; color: #fff;">---</b>
+                            </div>
+                            <div>
+                                <span style="font-size: 1.2rem; color: #64748b;">TRAIN</span>
+                                <b id="itinerary-train" style="display:block; font-size: 1.8rem; color: #fff;">---</b>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.3rem; color: #94a3b8; padding-top: 1rem; border-top: 1px solid #1e293b;">
+                            <i class="fas fa-couch"></i> <span id="itinerary-seat">---</span> | <i class="fas fa-door-open"></i> <span id="itinerary-gate">---</span>
+                        </div>
+                    </div>
+
+                    <div style="padding: 2.5rem; background: #020617; border-radius: 2rem; border-left: 6px solid #facc15;">
+                         <span style="font-size: 1.2rem; color: #64748b;">VISA COMPLIANCE</span>
+                         <b id="itinerary-visa" style="display:block; font-size: 1.8rem; color: #fff; margin-top: .5rem;">---</b>
+                    </div>
+                    
+                    <button onclick="triggerSkillDisruption()" class="btn" style="width: 100%; border: none; background: #e11d48; margin-top: 2rem; padding: 2rem; font-size: 1.8rem;">⚡ Check Disruptions</button>
+                    <a href="/itinerary/offline" style="text-align:center; display:block; margin-top: 1rem; color: #94a3b8; font-size: 1.2rem;"><i class="fas fa-download"></i> Save Recovery Plan Offline</a>
+                </div>
+            </div>
+
+            <!-- RIGHT: MASTER PLAN & MONITORING -->
+            <div style="display: flex; flex-direction: column; gap: 3rem;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 3rem; border: 1px solid #1e293b; min-height: 50rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                         <h3 style="font-size: 2.5rem; color: #38bdf8;"><i class="fas fa-map-marked-alt"></i> Optimized AI Plan</h3>
+                         <div id="itinerary-status" style="font-size: 1.4rem; color: #10b981; padding: .6rem 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 2rem;">ACTIVE</div>
+                    </div>
+                    
+                    <div id="ai-plan-output" style="font-size: 1.6rem; color: #f8fafc; line-height: 1.8;">
+                        <p style="color: #94a3b8;">Chat with Deep Concierge to generate a live itinerary...</p>
+                    </div>
+
+                    <div style="margin-top: 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div style="background: #020617; padding: 2rem; border-radius: 1.5rem; border: 1px solid #1e293b;">
+                             <span style="color: #38bdf8; font-size: 1.2rem;"><i class="fas fa-wallet"></i> SPENT</span>
+                             <b id="itinerary-spent" style="display:block; font-size: 2rem; color: #fff; margin: .5rem 0;">$0</b>
+                             <div style="width: 100%; height: .5rem; background: #1e293b; border-radius: 1rem; overflow: hidden;">
+                                <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: #38bdf8; transition: 1s;"></div>
+                             </div>
+                        </div>
+                        <div style="background: #020617; padding: 2rem; border-radius: 1.5rem; border: 1px solid #1e293b; text-align: center;">
+                             <span style="color: #10b981; font-size: 1.2rem;"><i class="fas fa-leaf"></i> ECO-FOOTPRINT</span>
+                             <b id="itinerary-carbon" style="display:block; font-size: 2.22rem; color: #fff; margin-top: .5rem;">---</b>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Reasoning Console -->
+                <div style="background: rgba(2, 6, 23, 0.8); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
+                    <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 1.5rem;"><i class="fas fa-terminal"></i> AI Analysis Flow</h4>
+                    <div id="skill-reasoning-log" style="height: 12rem; overflow-y: auto; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">
+                         Waiting for task generation...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
             <span>n</span>
             <span>o</span>
             <span>w</span>

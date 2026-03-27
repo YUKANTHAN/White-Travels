@@ -10,13 +10,71 @@ function headerSearch(e) {
     else if(dest.toLowerCase().includes('honolulu')) window.location.href = '/destinations/honolulu';
 }
 
-// --- AI CONCIERGE CHAT ---
-function toggleAIChat() {
-    const chatWin = document.getElementById('ai-chat-window');
-    if(chatWin) {
-        chatWin.style.display = chatWin.style.display === 'none' ? 'flex' : 'none';
-        if(chatWin.style.display === 'flex') document.getElementById('ai-chat-input').focus();
+// --- CHAT & MODAL LOGIC (Floating AI Modal) ---
+function toggleChat() {
+    const modal = document.getElementById('ai-chat-modal');
+    const sections = document.querySelectorAll('header, section, footer');
+    
+    if (modal.style.display === 'none' || !modal.style.display) {
+        modal.style.display = 'flex';
+        sections.forEach(el => { if(el) el.style.filter = 'blur(15px)'; });
+    } else {
+        modal.style.display = 'none';
+        sections.forEach(el => { if(el) el.style.filter = 'none'; });
     }
+}
+
+function chatSuggestion(text) {
+    document.getElementById('chat-input').value = text;
+    handleChatSubmit(new Event('submit'));
+}
+
+async function handleChatSubmit(e) {
+    if(e) e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const msg = input.value;
+    if(!msg) return;
+    
+    appendChatMessage('user', msg);
+    input.value = '';
+    
+    const aiLog = document.getElementById('skill-reasoning-log');
+    if(aiLog) aiLog.innerHTML = `<p style="color: #38bdf8;">[PROCESS]: Analyzing "${msg}"...</p>`;
+    
+    try {
+        const res = await fetch('/ai/plan', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ dest: msg, transport: 'Flight', prefs: 'Interactive' })
+        });
+        const data = await res.json();
+        
+        appendChatMessage('ai', "I have orchestrated your master plan. You can view it below the chat box in the Travel Expert section!");
+        
+        const planOutput = document.getElementById('ai-plan-output');
+        if(planOutput) {
+            planOutput.innerHTML = data.plan.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        }
+        
+        await refreshItineraryStatus();
+    } catch (err) {
+        appendChatMessage('ai', "Error connecting to Deep Concierge. Check your terminal.");
+    }
+}
+
+function appendChatMessage(role, text) {
+    const chat = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.style.alignSelf = role === 'user' ? 'flex-end' : 'flex-start';
+    div.style.background = role === 'user' ? '#38bdf8' : '#1e293b';
+    div.style.color = role === 'user' ? '#000' : '#fff';
+    div.style.padding = '1.5rem 2rem';
+    div.style.borderRadius = role === 'user' ? '2rem 2rem 0 2rem' : '2rem 2rem 2rem 0';
+    div.style.fontSize = '1.4rem';
+    div.style.maxWidth = '80%';
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
 }
 
 function toggleAIAssistant() {
