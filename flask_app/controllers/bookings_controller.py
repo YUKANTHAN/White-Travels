@@ -515,3 +515,85 @@ def stream_logs():
             if last_index > 0 and "CONFIRM" in current_logs[-1]: break
             time.sleep(0.5)
     return Response(stream_with_context(event_stream()), mimetype="text/event-stream")
+@app.route('/itinerary/offline')
+def offline_crisis_card():
+    """Generates a high-fidelity 'Master Itinerary' for the user to keep offline."""
+    try:
+        with open('itinerary.json', 'r') as f:
+            data = json.load(f)
+            itinerary = data[0] if isinstance(data, list) else data
+        
+        # A sleek, printable offline card template
+        content = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>White Travels | Master Itinerary Card</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+            <style>
+                body {{ font-family: 'Inter', sans-serif; background: #f8fafc; padding: 40px; color: #1e293b; }}
+                .card {{ max-width: 600px; margin: 0 auto; background: white; border: 2px solid #38bdf8; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+                .header {{ background: #38bdf8; color: white; padding: 30px; text-align: center; }}
+                .content {{ padding: 30px; }}
+                .row {{ display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }}
+                .label {{ font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }}
+                .value {{ font-size: 18px; font-weight: 700; }}
+                .footer {{ background: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; }}
+                .pnr-box {{ background: #020617; color: #38bdf8; font-family: monospace; padding: 5px 15px; border-radius: 5px; font-size: 14px; }}
+                @media print {{ .noprint {{ display: none; }} body {{ padding: 0; background: white; }} .card {{ box-shadow: none; border: 1px solid #eee; }} }}
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <div class="header">
+                    <i class="fas fa-paper-plane fa-3x" style="margin-bottom: 10px;"></i>
+                    <h1 style="margin: 0;">MASTER RECOVERY CARD</h1>
+                    <p style="margin: 5px 0 0; opacity: 0.8;">Autonomous AI Agentic Concierge</p>
+                </div>
+                <div class="content">
+                    <div class="row">
+                        <div class="label"><i class="fas fa-user"></i> PASSENGER</div>
+                        <div class="value">{itinerary.get('passenger_name', 'Traveling Guest')}</div>
+                    </div>
+                    <div class="row">
+                        <div class="label"><i class="fas fa-barcode"></i> PNR RECORD</div>
+                        <div class="pnr-box">{itinerary.get('pnr', 'PNR-XXXXXX')}</div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <div class="label">FLIGHT / TRAIN</div>
+                            <div class="value">{itinerary.get('flight_no', 'N/A')} / {itinerary.get('train_no', 'N/A')}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="label">GATE / SEAT</div>
+                            <div class="value">{itinerary.get('gate', '---')} / {itinerary.get('seat', '---')}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="label">CURRENT STATE</div>
+                        <div class="value" style="color: #10b981;">{itinerary.get('status', 'CONFIRMED')}</div>
+                    </div>
+                    <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <h4 style="margin: 0; color: #d97706; font-size: 14px;"><i class="fas fa-shield-alt"></i> AI RECOVERY PROTOCOL:</h4>
+                        <p style="font-size: 12px; color: #92400e; margin: 5px 0 0;">
+                            If connectivity is lost, present this card at any White Travels terminal. Our AI Sentinel (WT-Agent) has already synchronized your rebooking options to the global flight database.
+                        </p>
+                    </div>
+                </div>
+                <div class="footer">
+                    &copy; 2026 White Travels | Powered by Deep Concierge v4.0
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;" class="noprint">
+                <button onclick="window.print()" style="background: #38bdf8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-print"></i> Print Recovery Card
+                </button>
+            </div>
+        </body>
+        </html>
+        """
+        return content
+    except Exception as e:
+        return f"<h1>Recovery Offline: {str(e)}</h1>"
