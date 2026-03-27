@@ -200,37 +200,47 @@ def trigger_itinerary_disruption():
             response = requests.post(N8N_CHECK_WEBHOOK, json=payload, timeout=5)
             if response.status_code == 200:
                 result = response.json()
-                if result.get("status") == "DISRUPTED":
-                    # Create the recovery itinerary based on the AI's alternative booking
-                    recovery = {
-                        "status": "REBOOKED",
-                        "passenger_name": itinerary.get("passenger_name", "Primary Passenger"),
-                        "flight_no": "AI-RECOVERY",
-                        "disruption_reason": result.get("reason", "Disrupted by Crisis Agent"),
-                        "details": str(result.get("alternative_booking", "Crisis Stay or Alternative Transport"))
-                    }
-                    with open('itinerary.json', 'w') as f:
-                        json.dump([recovery], f, indent=4)
-                    
-                    # --- IMMEDIATE CUSTOMER NOTIFICATION ---
-                    customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
-                    notif_msg = f"❗ *Crisis Alert:* {result.get('reason')}\n\nOur AI has secured an alternative plan: {result.get('alternative_booking')[:150]}\n\nTap for details in your dashboard."
-                    try:
-                        Contact.send_whatsapp_notification(customer_phone, notif_msg)
-                    except Exception as ne:
-                        print(f"WhatsApp Notify error: {ne}")
+                # Create the recovery itinerary based on the AI's alternative booking
+                alt_flight = result.get("alternative_flight", "ALT-FL-101")
+                alt_train = result.get("alternative_train", "RECOVERY-TRAIN-B")
+                reason = result.get("reason", "Crisis Agent Intervention")
 
-                    print(f"[SUCCESS]: AI Rebooked alternative due to: {result.get('reason')}")
-                    return jsonify({"success": True, "status": "CANCELLED", "reason": result.get('reason')})
-                else:
-                    print("[LIVE]: No disruptions found by AI Search.")
-                    return jsonify({"success": True, "status": "CONFIRMED", "reason": "No disruptions found in location."})
-        except (requests.RequestException, ValueError, KeyError) as e:
-            print(f"[DEMO]: n8n offline or timeout ({e}). Falling back to Simulated Disruption.")
-        
+                recovery = {
+                    "status": "AWAITING_CONSENT",
+                    "passenger_name": itinerary.get("passenger_name", "Primary Passenger"),
+                    "flight_no": itinerary.get("flight_no"),
+                    "train_no": itinerary.get("train_no"),
+                    "temp_flight": alt_flight,
+                    "temp_train": alt_train,
+                    "disruption_reason": reason,
+                    "details": str(result.get("alternative_booking", "Crisis Stay or Alternative Transport"))
+                }
+                with open('itinerary.json', 'w') as f:
+                    json.dump([recovery], f, indent=4)
+                        
+                # --- IMMEDIATE CUSTOMER NOTIFICATION ---
+                customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
+                notif_msg = (
+                    f"❗ *Crisis Alert:* {reason}\n\n"
+                    f"Our AI has proposed an alternative plan for you:\n"
+                    f"✈️ *New Flight:* {alt_flight}\n"
+                    f"🚆 *New Train:* {alt_train}\n\n"
+                    f"Reply 'YES' in your dashboard to finalize this rebooking."
+                )
+                try:
+                    Contact.send_whatsapp_notification(customer_phone, notif_msg)
+                except Exception as ne:
+                    print(f"WhatsApp Notify error: {ne}")
+
+                print(f"[SUCCESS]: AI Proposed alternative due to: {reason}")
+                return jsonify({"success": True, "status": "AWAITING_CONSENT", "reason": reason})
+            else:
+                print("[LIVE]: No disruptions found by AI Search.")
+                return jsonify({"success": True, "status": "CONFIRMED", "reason": "No disruptions found in location."})
+        except Exception as inner_ex:
+            print(f"[N8N CALL FAIL]: {inner_ex}. Falling back to Demo.")
+
         # --- DEMO FALLBACK: FORCE DISRUPTION ---
-        # In a real app, we'd only rebook if there's a real issue. 
-        # But for the Travel Expert demo, we want to show the AI in action!
         itinerary['status'] = 'CANCELLED'
         itinerary['disruption_reason'] = "AI Search detected severe turbulence and landing constraints at destination. Rerouting required for safety."
         with open('itinerary.json', 'w') as f:
@@ -241,6 +251,39 @@ def trigger_itinerary_disruption():
             "status": "CANCELLED", 
             "reason": itinerary['disruption_reason']
         })
+            
+    except Exception as outer_e:
+        print(f"[CRITICAL ERR]: {outer_e}")
+        return jsonify({"error": str(outer_e), "success": False})
+
+@app.route('/itinerary/approve', methods=['POST'])
+def approve_itinerary_change():
+    """Finalizes the rebooking after the customer grants consent via dashboard."""
+    try:
+        with open('itinerary.json', 'r') as f:
+            data = json.load(f)
+            itinerary = data[0] if isinstance(data, list) else data
+        
+        if itinerary.get('status') == 'AWAITING_CONSENT':
+            # Finalize the change
+            itinerary['flight_no'] = itinerary.pop('temp_flight', 'ALT-99')
+            itinerary['train_no'] = itinerary.pop('temp_train', 'TRAIN-99')
+            itinerary['status'] = 'REBOOKED_AND_CONFIRMED'
+            itinerary['approved_at'] = time.ctime()
+            
+            with open('itinerary.json', 'w') as f:
+                json.dump([itinerary] if isinstance(data, list) else itinerary, f, indent=4)
+            
+            # Send Final Confirmation WhatsApp
+            customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
+            conf_msg = f"✅ *Rebooking Confirmed!* ✅\n\nYour new itinerary has been finalized:\n✈️ Flight: {itinerary['flight_no']}\n🚆 Train: {itinerary['train_no']}\n\nSafe travels!"
+            try:
+                Contact.send_whatsapp_notification(customer_phone, conf_msg)
+            except: pass
+
+            return jsonify({"success": True, "message": "Rebooking finalized successfully!"})
+        else:
+            return jsonify({"success": False, "message": "No pending rebooking request found."})
             
     except Exception as e:
         return jsonify({"error": str(e), "success": False})
@@ -258,66 +301,86 @@ def trigger_rebook_logic():
 
         # Send the "Ping" to n8n
         print(f"--- Pinging n8n Brain at {N8N_DISRUPTION_WEBHOOK} ---")
-        response = requests.post(N8N_DISRUPTION_WEBHOOK, json=booking_data, timeout=10)
-        
-        # If n8n returns a recovery strategy right away
-        n8n_result = response.json() if response.status_code == 200 else {}
-        rebooking_strategy = n8n_result.get('rebooking_strategy', "n8n Brain: Processing fallback recovery options...")
-
-        # --- AUTO-NOTIFY CUSTOMER VIA WHATSAPP ---
-        # Note: We attempt to get the phone number from environment or session
-        customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367") # Using a default for demo
-        whatsapp_msg = f"⚠️ *Travel Alert for {booking_data.get('passenger_name')}* ⚠️\n\nYour itinerary is being adjusted due to disruptions. \n\n*Current Strategy:* {rebooking_strategy}\n\nOur AI is monitoring your status 24/7. Check your dashboard for real-time updates! 🌍"
-        
         try:
-            Contact.send_whatsapp_notification(customer_phone, whatsapp_msg)
-        except Exception as e:
-            print(f"WhatsApp notification failed: {e}")
+            response = requests.post(N8N_DISRUPTION_WEBHOOK, json=booking_data, timeout=10)
+            n8n_result = response.json() if response.status_code == 200 else {}
+            rebooking_strategy = n8n_result.get('rebooking_strategy', "n8n Brain: Processing fallback recovery options...")
 
-        return jsonify({
-            "success": True, 
-            "output": f"[N8N RECOVERY]: {rebooking_strategy}",
-            "n8n_status": response.status_code
-        })
-    except Exception as e:
-        # Fallback to local script if n8n is unreachable
-        print(f"n8n unreachable: {e}. Falling back to local rebooker.")
-        import subprocess
-        script_path = os.path.join('.agent', 'skills', 'travel-expert', 'scripts', 'rebook_logic.py')
-        try:
-            result = subprocess.run(['python', script_path], capture_output=True, text=True)
-            output_text = result.stdout
-            
-            # --- AUTO-NOTIFY CUSTOMER VIA WHATSAPP (LOCAL FALLBACK) ---
+            # --- AUTO-NOTIFY CUSTOMER VIA WHATSAPP ---
             customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
-            whatsapp_msg = f"🔔 *Agent Alert: Flight Recovery In Progress* 🔔\n\nDisruption detected. Our autonomous system is re-routing your travel. \n\n*Alternative Identified:* {output_text[:150]}..."
+            whatsapp_msg = f"⚠️ *Travel Alert for {booking_data.get('passenger_name')}* ⚠️\n\nYour itinerary is being adjusted due to disruptions. \n\n*Current Strategy:* {rebooking_strategy}\n\nOur AI is monitoring your status 24/7. Check your dashboard for real-time updates! 🌍"
+            
             try:
                 Contact.send_whatsapp_notification(customer_phone, whatsapp_msg)
-            except Exception as w_e:
-                 print(f"WhatsApp notification failed: {w_e}")
+            except Exception as e:
+                print(f"WhatsApp notification failed: {e}")
 
-            return jsonify({"success": True, "output": output_text})
-        except:
-            return jsonify({"error": str(e)})
+            return jsonify({
+                "success": True, 
+                "output": f"[N8N RECOVERY]: {rebooking_strategy}",
+                "n8n_status": response.status_code
+            })
+        except Exception as n8n_err:
+            print(f"n8n unreachable: {n8n_err}. Falling back to local rebooker.")
+            
+            import subprocess
+            script_path = os.path.join('.agent', 'skills', 'travel-expert', 'scripts', 'rebook_logic.py')
+            
+            try:
+                result = subprocess.run(['python', script_path], capture_output=True, text=True)
+                output_text = result.stdout
+                
+                # --- AUTO-NOTIFY CUSTOMER VIA WHATSAPP (LOCAL FALLBACK) ---
+                customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
+                
+                prop_flight = f"WT-ALT-{random.randint(200,800)}"
+                prop_train = "METRO-RECOV-12"
+                
+                booking_data['status'] = 'AWAITING_CONSENT'
+                booking_data['temp_flight'] = prop_flight
+                booking_data['temp_train'] = prop_train
+                with open('itinerary.json', 'w') as f:
+                    json.dump([booking_data], f, indent=4)
+
+                whatsapp_msg = (
+                    f"🔔 *Agent Alert: Flight Recovery In Progress* 🔔\n\n"
+                    f"Disruption detected. Our autonomous system has proposed a re-routing:\n\n"
+                    f"✈️ *Proposed Flight:* {prop_flight}\n"
+                    f"🚆 *Proposed Train:* {prop_train}\n\n"
+                    f"Please approve this in your dashboard to proceed."
+                )
+                try:
+                    Contact.send_whatsapp_notification(customer_phone, whatsapp_msg)
+                except Exception as w_e:
+                     print(f"WhatsApp notification failed: {w_e}")
+
+                return jsonify({"success": True, "output": f"Proposed Alternatives: {prop_flight}, {prop_train}"})
+            except Exception as sub_e:
+                return jsonify({"error": str(sub_e), "success": False})
+
+    except Exception as outer_e:
+        return jsonify({"error": str(outer_e), "success": False})
 
 @app.route('/booking/simulate', methods=['POST'])
 def create_simulated_booking():
     data = request.get_json()
     new_flight = {
-        "status": "Confirmed",
-        "passenger_name": "J. Doe (Primary)",
-        "seat": "12A",
+        "status": "CONFIRMED",
+        "passenger_name": data.get('passenger_name', 'J. Doe (Primary)'),
+        "seat": f"{random.randint(1,40)}{random.choice('ABCDEF')}",
         "class_type": "Economy",
-        "gate": "D4",
+        "gate": f"{random.choice('ABCD')}{random.randint(1,10)}",
         "boarding_time": "10:15 AM",
-        "flight_no": data.get('flight_no', 'UA204'),
+        "flight_no": data.get('flight_no', f'WT-{random.randint(100,500)}'),
         "train_no": data.get('train_no', ''),
-        "hotel": data.get('hotel', ''),
+        "hotel": data.get('hotel', 'AI Selected Stay'),
+        "origin": "Current",
+        "destination": data.get('destination', 'Paris'),
         "pnr": "SIM-ITN-" + str(random.randint(1000, 9999)),
         # NEW AGENT FEATURES
         "budget_limit": 2500,
         "budget_spent": random.randint(300, 600),
-        "carbon_kg": "450kg",
+        "carbon_kg": f"{random.randint(200, 600)}kg",
         "visa_status": "Processing Draft..."
     }
     with open('itinerary.json', 'w') as f:

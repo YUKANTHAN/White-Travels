@@ -598,7 +598,102 @@
 
     <script src="{{url_for('static', filename='js/script.js')}}"></script>
     <script>
+        // --- TRAVEL EXPERT DASHBOARD REFRESH ---
+        async function refreshItineraryStatus() {
+            const refreshBtn = document.querySelector('button[onclick="refreshItineraryStatus()"]');
+            const icon = refreshBtn.querySelector('i');
+            icon.classList.add('fa-spin');
+            
+            try {
+                const response = await fetch('/itinerary/status');
+                const data = await response.json();
+                updateDashboardUI(data);
+                
+                // Update reasoning log
+                const log = document.getElementById('skill-reasoning-log');
+                const p = document.createElement('p');
+                p.style.color = '#38bdf8';
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] Checked asset state: <b>${data.status || 'SYNCED'}</b>`;
+                log.prepend(p);
+                
+            } catch (err) {
+                console.error("Refresh failed:", err);
+            } finally {
+                setTimeout(() => icon.classList.remove('fa-spin'), 800);
+            }
+        }
+
+        function updateDashboardUI(data) {
+            if (!data || data.status === "No Active Itinerary") return;
+            
+            document.getElementById('itinerary-passenger').innerText = data.passenger_name || "---";
+            document.getElementById('itinerary-flight').innerText = data.flight_no || "N/A";
+            document.getElementById('itinerary-train').innerText = data.train_no || "N/A";
+            document.getElementById('itinerary-seat').innerText = (data.seat || "---") + " / " + (data.class_type || "---");
+            document.getElementById('itinerary-gate').innerText = (data.gate || "---") + " @ " + (data.boarding_time || "---");
+            document.getElementById('itinerary-visa').innerText = data.visa_status || "---";
+            document.getElementById('itinerary-carbon').innerText = data.carbon_kg || "---";
+            
+            const statusEl = document.getElementById('itinerary-status');
+            statusEl.innerText = data.status || "CONFIRMED";
+            
+            // Color coding
+            if (data.status === 'CANCELLED' || data.status === 'DISRUPTED') {
+                statusEl.style.background = 'rgba(225, 29, 72, 0.2)';
+                statusEl.style.color = '#e11d48';
+            } else {
+                statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
+                statusEl.style.color = '#10b981';
+            }
+
+            // Budget Update
+            const spent = data.budget_spent || 0;
+            const limit = data.budget_limit || 2500;
+            document.getElementById('itinerary-spent').innerText = `$${spent}`;
+            document.getElementById('itinerary-limit').innerText = `$${limit}`;
+            const percentage = Math.min((spent / limit) * 100, 100);
+            document.getElementById('itinerary-budget-bar').style.width = percentage + '%';
+        }
+
+        async function triggerSkillDisruption() {
+            const btn = document.querySelector('button[onclick="triggerSkillDisruption()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agent Analyzing...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/itinerary/disruption', { method: 'POST' });
+                const result = await res.json();
+                
+                const log = document.getElementById('skill-reasoning-log');
+                const p = document.createElement('p');
+                p.style.color = result.status === 'CANCELLED' ? '#e11d48' : '#10b981';
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] ${result.reason}`;
+                log.prepend(p);
+
+                // Auto-refresh UI after delay
+                setTimeout(refreshItineraryStatus, 1500);
+
+                if (result.status === 'CANCELLED' || result.status === 'AWAITING_CONSENT') {
+                    showDisruptionModal(result.reason);
+                }
+            } catch (err) {
+                console.error("Disruption check failed:", err);
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+
+        function showDisruptionModal(reason) {
+            // Simplified for demo, could be a real modal
+            alert("🚨 DISRUPTION DETECTED!\n\n" + reason + "\n\nWhite Travels AI is now rebooking your journey.");
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            refreshItineraryStatus(); // Initial load
             if(document.getElementById('ai-assistant-dashboard')) {
                 updateAssistantContext();
             }

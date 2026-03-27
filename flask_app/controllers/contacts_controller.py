@@ -37,6 +37,28 @@ def contact_us():
     Contact.sendContactForm(result)
     Contact.save(data)
     
+    # NEW: OVERWRITE ACTIVE ITINERARY WITH ENQUIRY DATA
+    import json, random
+    new_itinerary = {
+        "status": "CONFIRMED",
+        "passenger_name": result.get('contact_name', 'Traveling Passenger'),
+        "seat": f"{random.randint(1,40)}{random.choice('ABCDEF')}",
+        "class_type": "Premium Economy",
+        "gate": f"{random.choice('ABCD')}{random.randint(1,30)}",
+        "boarding_time": "AUTO_SYNCED",
+        "flight_no": f"WT-{random.randint(100,999)}",
+        "train_no": f"METRO-{random.randint(10,99)}",
+        "origin": "Current Location",
+        "destination": result.get('contact_subject', 'Paris'),
+        "pnr": f"PNR-{random.randint(10000, 99999)}",
+        "budget_limit": 2500,
+        "budget_spent": random.randint(200, 800),
+        "carbon_kg": f"{random.randint(200, 500)}kg",
+        "visa_status": "Processing Draft..."
+    }
+    with open('itinerary.json', 'w') as f:
+        json.dump([new_itinerary], f, indent=4)
+
     # NEW: AI Automated Response Logic
     ai_email_body = concierge.generate_email_content(
         result.get('contact_name', 'Valued Customer'),

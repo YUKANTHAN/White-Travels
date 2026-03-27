@@ -30,6 +30,7 @@ if %errorlevel% equ 0 (
 echo [OK] Using: %PY%
 
 :: Install Dependencies (Silent)
+
 echo [2/3] Skipping dependency check for faster startup...
 :: %PY% -m pip install -r requirements.txt --quiet
 :: if %errorlevel% neq 0 (

@@ -1,14 +1,22 @@
+import os
+import sys
+import re
+import smtplib
+import traceback
 from flask_app.config.mongodb_connection import connectToMongo
 from bson.objectid import ObjectId
-import re
-import os
-import smtplib
 from email.message import EmailMessage
 from flask import flash
+from dotenv import load_dotenv, find_dotenv
+
+# Initialize environment immediately
+load_dotenv(find_dotenv(), override=True)
+
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 LETTER_REGEX = re.compile(r"^[\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$")
 PHONE_REGEX = re.compile(r"^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$")
 DATABASE = "white_travels_db"
+
 EMAIL_ADDRESS = os.environ.get('EMAIL_USER')
 EMAIL_PASSWORD = os.environ.get('EMAIL_APP_PASS')
 
@@ -83,10 +91,6 @@ class Contact:
         """
         msg_customer.set_content(customer_content)
 
-        # 3. Simulate/Prepare WhatsApp Notification
-        whatsapp_message = f"Hello {result['contact_name']}! \U0001F30D We've received your enquiry regarding '{result['contact_subject']}' at White Travels. Our team is looking into it and will contact you soon. While you wait, check out our amazing packages to destinations like Paris, Tokyo, and Cabo! \u2708\ufe0f\U0001F3D6\ufe0f"
-        Contact.send_whatsapp_notification(result['contact_number'], whatsapp_message)
-
         try:
             with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
                 smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
@@ -97,27 +101,71 @@ class Contact:
 
     @staticmethod
     def send_whatsapp_notification(phone_number, message_content):
-        # 1. Cleaning number for pywhatkit (ensure it includes +country code)
-        clean_number = str(phone_number).strip()
-        if not clean_number.startswith("+"):
-            clean_number = f"+91{clean_number}"
+        # 🟢 FORCE FRESH ENV RELOAD
+        env_path = find_dotenv()
+        load_dotenv(env_path, override=True)
 
-        print(f"[🟢 WhatsApp Notification via PyWhatKit]")
-        print(f"Targeting: {clean_number}")
+        account_sid = os.environ.get('TWILIO_ACCOUNT_SID', '').strip()
+        auth_token = os.environ.get('TWILIO_AUTH_TOKEN', '').strip()
+        from_number = os.environ.get('TWILIO_WHATSAPP_NUMBER', '').strip()
 
+        # Debug Trace
+        print(f"\n[DEBUG] --- WhatsApp Notification Attempt ---", flush=True)
+        print(f"[DEBUG] ENV File: {env_path}", flush=True)
+        print(f"[DEBUG] SID Found: {'Yes' if account_sid else 'No'} ({account_sid[:5]}...)", flush=True)
+        print(f"[DEBUG] Token Found: {'Yes' if auth_token else 'No'}", flush=True)
+
+        is_twilio_enabled = bool(account_sid and account_sid.startswith('AC') and auth_token)
+
+        if is_twilio_enabled:
+            try:
+                from twilio.rest import Client
+                client = Client(account_sid, auth_token)
+                
+                # E.164 Normalization: Remove all spaces for Twilio
+                clean_to = "".join(filter(str.isdigit, phone_number))
+                if not clean_to.startswith('+'): clean_to = f"+{clean_to}"
+                
+                clean_from = "".join(filter(str.isdigit, from_number))
+                if not clean_from.startswith('+'): clean_from = f"+{clean_from}"
+                
+                print(f"[DEBUG] Sending to: {clean_to} from: {clean_from}", flush=True)
+
+                msg = client.messages.create(
+                    from_=f'whatsapp:{clean_from}',
+                    body=message_content,
+                    to=f'whatsapp:{clean_to}'
+                )
+                print(f"[SUCCESS] WhatsApp Sent! SID: {msg.sid}", flush=True)
+                return True
+            except Exception as e:
+                print(f"[TWILIO ERROR]: {str(e)}", flush=True)
+                traceback.print_exc()
+        else:
+            print("[INFO] Twilio credentials missing or invalid. Check your .env file.", flush=True)
+
+        # 🟡 BROWSER FALLBACK
+        allow_browser_raw = os.environ.get('ALLOW_BROWSER_WHATSAPP', 'True')
+        allow_browser = allow_browser_raw.split('#')[0].strip().lower() == 'true'
+        
+        if not allow_browser:
+            print(f"[TERMINATED] Browser fallback disabled in .env. No message sent.", flush=True)
+            return False
+
+        print(f"[🟠 FALLBACK] Launching Browser automation...", flush=True)
         try:
             import pywhatkit
-            # sendwhatmsg_instantly(phone_no, message, wait_time, tab_close, close_time)
             pywhatkit.sendwhatmsg_instantly(
-                phone_no=clean_number,
+                phone_no=phone_number,
                 message=message_content,
                 wait_time=15, 
                 tab_close=True,
                 close_time=5
             )
-            print(f"WhatsApp browser window opened for: {clean_number}")
+            return True
         except Exception as e:
-            print(f"Failed to send WhatsApp via pywhatkit: {e}")
+            print(f"Browser automation failed: {e}", flush=True)
+            return False
 
 
     @staticmethod
