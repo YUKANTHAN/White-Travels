@@ -57,6 +57,12 @@ async function handleChatSubmit(e) {
         });
         const data = await res.json();
         
+        // --- PANIC MODE UI TRIGGER ---
+        if (data.plan.includes("CRISIS specialist") || data.plan.includes("🆘")) {
+            const statusDot = document.getElementById('itinerary-status');
+            if (statusDot) statusDot.classList.add('pulse-red');
+        }
+
         appendChatMessage('ai', "I have orchestrated your master plan. You can view it below the chat box in the Travel Expert section!");
         
         const planOutput = document.getElementById('ai-plan-output');

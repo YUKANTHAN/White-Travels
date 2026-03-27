@@ -259,16 +259,25 @@ def trigger_itinerary_disruption():
         except Exception as inner_ex:
             print(f"[N8N CALL FAIL]: {inner_ex}. Falling back to Demo.")
 
-        # --- DEMO FALLBACK: FORCE DISRUPTION FOR IMPACT ---
+        # --- DEMO FALLBACK: PROACTIVE & SUSTAINABLE RECOVERY ---
         itinerary['status'] = 'CANCELLED'
-        itinerary['disruption_reason'] = "AI Sentinel detected severe weather anomalies and ground infrastructure constraints at your destination. Recovery Agent is calculating optimal re-routing..."
+        # Predictive + Sustainability Logic
+        carbon_saved = 150 
+        itinerary['disruption_reason'] = (
+            "⚠️ [PREDICTIVE ALERT]: Severe sleet storm detected 4h out. "
+            f"Switching to Rail will save {carbon_saved}kg CO2 (75% risk reduction). "
+            "⚡ **[GREEN RECOVERY]** Agent is pre-holding a sleeper seat for safety."
+        )
+        itinerary['carbon_kg'] = f"{itinerary.get('carbon_kg','350kg')} (-{carbon_saved}kg)"
+        
         with open('itinerary.json', 'w') as f:
             json.dump([itinerary], f, indent=4)
         
         return jsonify({
             "success": True, 
             "status": "CANCELLED", 
-            "reason": itinerary['disruption_reason']
+            "reason": itinerary['disruption_reason'],
+            "carbon_saved": carbon_saved
         })
             
     except Exception as outer_e:

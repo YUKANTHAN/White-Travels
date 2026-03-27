@@ -198,6 +198,17 @@ class DeepConcierge:
         """Comprehensive, topic-aware heuristic engine for travel questions."""
         print(f"[DEEP-CONCIERGE] Analyzing: {prompt}")
         lower_prompt = prompt.lower().strip()
+        
+        # === PANIC MODE / SENTIMENT DETECTION ===
+        panic_keywords = ["stuck", "help", "disaster", "cancelled", "missed", "stranded", "panic", "emergency"]
+        if any(w in lower_prompt for w in panic_keywords):
+            return (
+                "🚨 **PRIORITY AI CRISIS SPECIALIST ACTIVATED** 🚨\n\n"
+                "I hear you loud and clear. Take a deep breath — I am now prioritizing your itinerary for an immediate recovery pulse. "
+                "I'm scanning all available flight and rail connections to resolve this as we speak. \n\n"
+                "**While I work:** I've generated a complimentary **Master Lounge Pass (Voucher: WHITE-CRISIS-2026)** for you. Please head to the nearest lounge while I finalize your alternate route."
+            )
+
         response_parts = []
 
         city_db = self.CITY_DB

@@ -677,6 +677,15 @@ header .search-bar-container label:hover {
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    .travel-expert-grid {
+        grid-template-columns: 1fr;
+    }
+    .hero-chat-container {
+        height: 500px;
+    }
+}
+
 .te-card {
     background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(20px);
@@ -921,3 +930,5 @@ header .search-bar-container label:hover {
     .hero-chat-container { height: 500px; border-radius: 15px; }
     .te-card { padding: 3rem; }
 }
+
+@keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(225, 29, 72, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } } .pulse-red { animation: pulse-red 1s infinite !important; background: #e11d48 !important; }

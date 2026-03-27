@@ -787,18 +787,35 @@
 
         async function triggerSkillDisruption() {
             const btn = document.querySelector('button[onclick="triggerSkillDisruption()"]');
+            const log = document.getElementById('skill-reasoning-log');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agent Analyzing...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agent Scaling...';
             btn.disabled = true;
+
+            const steps = [
+                { msg: "Pinging Global Sentinel Mesh...", color: "#38bdf8" },
+                { msg: "Analyzing flight-to-train feasibility for current passenger cluster...", color: "#38bdf8" },
+                { msg: "Checking destination weather forecast... [ALERT: Sleet Detected]", color: "#facc15" },
+                { msg: "Calculating budget & sustainability impact...", color: "#10b981" },
+                { msg: "Finalizing autonomous recovery path...", color: "#10b981" }
+            ];
+
+            // Real-time Thinking Simulation
+            for (let i = 0; i < steps.length; i++) {
+                const p = document.createElement('p');
+                p.style.color = steps[i].color;
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] ${steps[i].msg}`;
+                log.prepend(p);
+                await new Promise(r => setTimeout(r, 800));
+            }
 
             try {
                 const res = await fetch('/itinerary/disruption', { method: 'POST' });
                 const result = await res.json();
                 
-                const log = document.getElementById('skill-reasoning-log');
                 const p = document.createElement('p');
                 p.style.color = result.status === 'CANCELLED' ? '#e11d48' : '#10b981';
-                p.innerHTML = `> [${new Date().toLocaleTimeString()}] ${result.reason}`;
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] <b>RESULT:</b> ${result.reason}`;
                 log.prepend(p);
 
                 // Auto-refresh UI after delay
