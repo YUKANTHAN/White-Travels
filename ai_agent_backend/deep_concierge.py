@@ -111,43 +111,98 @@ class DeepConcierge:
         return plan
 
     def chat(self, prompt):
-        """Dynamic conversational heuristic engine mimicking an NLP LLM"""
+        """Comprehensive, topic-aware heuristic engine for travel questions."""
         print(f"[DEEP-CONCIERGE] Analyzing: {prompt}")
         lower_prompt = prompt.lower()
-        
-        # 1. Greetings
-        if lower_prompt in ["hi", "hello", "hey", "help"]:
-            return "Greetings! I am the Autonomous Concierge. I have access to live weather, Amadeus flights, and your calendar. How can I optimize your journey today?"
-            
-        # 2. Dynamic Location Extraction
-        known_cities = ['tokyo', 'paris', 'london', 'new york', 'cabo', 'honolulu', 'rome', 'dubai', 'bali']
-        detected_cities = [city for city in known_cities if city in lower_prompt]
-        target_city = detected_cities[0].title() if detected_cities else "your destination"
-
         response_parts = []
         
-        # 3. Tool Execution via Intent Parsing
-        if "weather" in lower_prompt or "rain" in lower_prompt or "hot" in lower_prompt:
-            temp = random.randint(18, 30)
-            response_parts.append(f"I've tapped into the live meteorological arrays for {target_city}. It is currently {temp}°C with optimal visibility.")
-            
-        if "flight" in lower_prompt or "rebook" in lower_prompt or "ticket" in lower_prompt:
-            response_parts.append(f"Scanning Amadeus GDS... I recommend routing via flight WT-{random.randint(100,999)} to {target_city}. It has a 98% historical on-time reliability score.")
-            
-        if "schedule" in lower_prompt or "calendar" in lower_prompt or "time" in lower_prompt:
+        known_cities = ['tokyo', 'paris', 'london', 'new york', 'cabo', 'honolulu', 'rome', 'dubai', 'bali', 'chennai', 'mumbai', 'delhi', 'bangalore', 'sydney', 'barcelona', 'amsterdam', 'berlin', 'kyoto']
+        detected_cities = [city for city in known_cities if city in lower_prompt]
+        target_city = detected_cities[0].title() if detected_cities else None
+
+        # 1. Greetings and General Information
+        if any(w in lower_prompt for w in ["hi", "hello", "hey", "greetings", "who are you"]):
+            response_parts.append("Greetings! I am your Autonomous Concierge, powered by DeepSeek AI. I can assist with flights, weather, itineraries, and more. How may I optimize your journey today?")
+        
+        # 2. Weather Information
+        if any(w in lower_prompt for w in ["weather", "rain", "hot", "climate", "temperature", "cold", "forecast"]):
+            if target_city:
+                weather_info = self._get_weather(target_city)
+                response_parts.append(f"I've tapped into the live meteorological arrays for {target_city}. {weather_info}.")
+            else:
+                response_parts.append("Which city's weather are you interested in?")
+
+        # 3. Flight Information (Search, Rebook, Cancel)
+        if any(w in lower_prompt for w in ["flight", "rebook", "ticket", "cancel", "fly", "airline", "departure", "arrival"]):
+            if target_city:
+                origin_city = "your current location" # Placeholder for more advanced logic
+                flight_info = self._search_flights(origin_city, target_city)
+                response_parts.append(f"Scanning Amadeus GDS... {flight_info}. I can proceed with booking if you confirm.")
+            else:
+                response_parts.append("To search for flights, please specify your destination city.")
+
+        # 4. Calendar and Schedule
+        if any(w in lower_prompt for w in ["schedule", "calendar", "time", "appointment", "meeting"]):
             response_parts.append(self.tools["check_calendar"]())
-            
-        if "price" in lower_prompt or "cost" in lower_prompt or "cheap" in lower_prompt:
-            response_parts.append(self.tools["price_drop_poll"]("WT-202"))
 
-        # 4. Trip Planning Context
-        if "surprise me" in lower_prompt or "plan" in lower_prompt or ("where" in lower_prompt and "go" in lower_prompt):
-            if not detected_cities: target_city = random.choice(['Tokyo', 'Paris', 'Cabo San Lucas', 'London'])
-            response_parts.append(f"My predictive analytics strongly suggest an expedition to {target_city} right now! High value, great weather. Shall I draft the master itinerary in the Detailed Planner?")
+        # 5. Price Tracking and Deals
+        if any(w in lower_prompt for w in ["price", "cost", "cheap", "expensive", "deal", "discount", "track"]):
+            response_parts.append(self.tools["price_drop_poll"]("FL-AI-RECOMMEND")) # Using a generic flight ID for polling
 
-        # 5. Fallback Default
+        # 6. Visa Information
+        if any(w in lower_prompt for w in ["visa", "entry", "passport", "travel requirements"]):
+            if target_city:
+                visa_status = self._check_visa("India", target_city) # Assuming 'India' as origin for demo
+                response_parts.append(f"Regarding your travel to {target_city}: {visa_status}")
+            else:
+                response_parts.append("Please specify the destination city for visa requirements.")
+
+        # 7. Sustainability / Carbon Footprint
+        if any(w in lower_prompt for w in ["carbon", "eco", "sustainability", "green travel"]):
+            transport_mode = "Flight" # Default for general query, could be extracted from prompt
+            carbon_info = self._calculate_carbon(transport_mode)
+            response_parts.append(f"Your estimated trip footprint for {transport_mode} is {carbon_info}. I can suggest eco-friendly alternatives or offset options.")
+
+        # 8. Tourist Spots and City Descriptions
+        tourist_keywords = ["tourist", "attraction", "place", "visit", "see", "sightseeing", "spot", "landmark", "explore", "describe", "say about", "tell me about", "must see"]
+        if any(w in lower_prompt for w in tourist_keywords):
+            if target_city:
+                if target_city.lower() == 'paris':
+                    response_parts.append(f"{target_city} is renowned for the Eiffel Tower, Louvre Museum, Notre Dame Cathedral, and charming Montmartre. A city of art, history, and romance!")
+                elif target_city.lower() == 'tokyo':
+                    response_parts.append(f"{target_city} offers a vibrant mix of modern skyscrapers and ancient temples. Must-visit: Shibuya Crossing, Senso-ji Temple, Akihabara, and the Imperial Palace.")
+                elif target_city.lower() == 'london':
+                    response_parts.append(f"{target_city} boasts iconic landmarks: the Tower of London, Buckingham Palace, the British Museum, Big Ben, and the West End theatre district.")
+                elif target_city.lower() == 'chennai':
+                    response_parts.append(f"{target_city} is home to the famous Marina Beach (2nd longest in the world!), Kapaleeshwarar Temple, Fort St. George, and nearby Mahabalipuram UNESCO site. Don't miss the local filter coffee and dosas!")
+                elif target_city.lower() == 'mumbai':
+                    response_parts.append(f"{target_city}: Visit Gateway of India, Marine Drive (Queen's Necklace), Elephanta Caves, Juhu Beach, and Bollywood Studios. Best monsoon city in India!")
+                elif target_city.lower() == 'delhi':
+                    response_parts.append(f"{target_city}: See the Red Fort, Qutub Minar, India Gate, Humayun's Tomb, and Lotus Temple. Delhi is a capital rich in Mughal architecture and street food!")
+                elif target_city.lower() == 'dubai':
+                    response_parts.append(f"{target_city}: Burj Khalifa (world's tallest building), The Palm Jumeirah, Dubai Mall, Old Souk bazaars, and a Desert Safari at sunset. A city that dreams big!")
+                elif target_city.lower() == 'rome':
+                    response_parts.append(f"{target_city}: The Colosseum, Vatican City, Trevi Fountain, and the Pantheon await you. Rome is an open-air museum you can never fully explore in one trip!")
+                else:
+                    response_parts.append(f"{target_city} is a wonderful destination! I recommend exploring its local markets, historical sites, cultural neighbourhoods, and culinary scene. Want a more detailed guide?")
+            else:
+                response_parts.append("Which city's tourist spots or description would you like to know about?")
+
+        # 9. Trip Planning Context / Suggestions
+        if any(w in lower_prompt for w in ["surprise me", "plan", "want to go", "book", "suggest a trip"]):
+            if not target_city: 
+                target_city = random.choice(['Tokyo', 'Paris', 'Cabo San Lucas', 'London', 'Rome'])
+            response_parts.append(f"My predictive analytics strongly suggest an expedition to {target_city} right now! High value, great weather. I will open the Detailed Planner for you to lock it in.")
+
+        # 10. Fallback Default / Clarification
         if not response_parts:
-            response_parts.append(f"I have parsed your query regarding '{prompt}'. My cognitive engines suggest we formulate a comprehensive travel strategy. Click 'Open Detailed Planner' below, and I will handle the logistics.")
+            responses = [
+                f"That's an interesting question about '{prompt}'. I can certainly help you look into that. Could you provide a bit more context about your travel goals?",
+                f"I comprehend your query regarding '{prompt}'. As an AI travel expert, I am constantly monitoring global travel networks for you.",
+                f"Noted. If you would like me to check specific flights, weather, or pricing for '{prompt}', just let me know which city you have in mind!",
+                "I'm not entirely sure how to assist with that specific request. Could you rephrase or ask about flights, weather, or destinations?"
+            ]
+            response_parts.append(random.choice(responses))
             
         return " ".join(response_parts)
     def generate_email_content(self, user_name, subject):
