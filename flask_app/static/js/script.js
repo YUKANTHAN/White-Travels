@@ -19,6 +19,16 @@ function toggleAIChat() {
     }
 }
 
+function toggleAIAssistant() {
+    const modal = document.getElementById('quick-book-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        nextQB(1);
+    } else {
+        window.location.href = '/?quickbook=1';
+    }
+}
+
 async function sendAIChat() {
     const input = document.getElementById('ai-chat-input');
     const body = document.getElementById('ai-chat-body');
@@ -68,22 +78,26 @@ async function simulateAIBooking(flightNo) {
     } catch (err) { console.error("Simulation failed:", err); }
 }
 
+let lastNotifiedState = '';
+
 async function refreshItineraryStatus() {
     try {
         const res = await fetch('/itinerary/status');
         const data = await res.json();
         const flightEl = document.getElementById('itinerary-flight');
+        const trainEl = document.getElementById('itinerary-train');
         const statusEl = document.getElementById('itinerary-status');
         const pnrEl = document.getElementById('itinerary-pnr');
         
         if(flightEl) flightEl.innerText = data.flight_no || '---';
+        if(trainEl) trainEl.innerText = data.train_no || '---';
         if(pnrEl) pnrEl.innerText = data.pnr || '---';
         if(statusEl) {
-            statusEl.innerText = data.status.toUpperCase();
-            if(data.status.toUpperCase() === 'CANCELLED') {
+            statusEl.innerText = data.status ? data.status.toUpperCase() : '---';
+            if(data.status && data.status.toUpperCase() === 'CANCELLED') {
                 statusEl.style.color = '#e11d48';
                 statusEl.style.background = 'rgba(225, 29, 72, 0.1)';
-            } else if(data.status.toUpperCase() === 'REBOOKED') {
+            } else if(data.status && data.status.toUpperCase() === 'REBOOKED') {
                 statusEl.style.color = '#38bdf8';
                 statusEl.style.background = 'rgba(56, 189, 248, 0.1)';
             } else {
@@ -91,6 +105,37 @@ async function refreshItineraryStatus() {
                 statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
             }
         }
+
+        // Real-time Notification Injection
+        const currentState = (data.flight_no || '') + '|' + (data.train_no || '') + '|' + (data.status || '');
+        if (data.status && data.status.toUpperCase() === 'CANCELLED' && currentState !== lastNotifiedState) {
+            lastNotifiedState = currentState;
+            const notifBox = document.getElementById('dynamic-notifications');
+            const badge = document.getElementById('notification-badge');
+            
+            if (notifBox) {
+                if (notifBox.innerHTML.includes('No recent disruptions detected.')) {
+                    notifBox.innerHTML = ''; 
+                }
+                const flAlert = data.flight_no ? `Flight ${data.flight_no}` : '';
+                const trAlert = data.train_no ? `Train ${data.train_no}` : '';
+                const joined = [flAlert, trAlert].filter(Boolean).join(' & ');
+
+                const alertHtml = `
+                    <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid #e11d48; border-radius: 0.5rem; animation: fadein 0.5s;">
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-exclamation-triangle" style="color: #e11d48;"></i> CRITICAL: ${joined} Cancelled!</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 0.5rem;">Reason: Disrupted scheduled bookings.</p>
+                        <p style="font-size: 1.1rem; color: #64748b; margin-top: .5rem;"><a href="/#travel-expert-monitor" style="color: var(--primary); font-weight: bold;">View Recovery Strategy</a></p>
+                    </div>
+                `;
+                notifBox.innerHTML = alertHtml + notifBox.innerHTML;
+            }
+            if (badge) {
+                badge.style.display = 'block';
+                badge.innerText = parseInt(badge.innerText || '0') + 1;
+            }
+        }
+        
         return data.status;
     } catch (err) { console.error("Error refreshing itinerary:", err); }
 }
@@ -145,37 +190,127 @@ function closeWelcomePopup() {
     }
 }
 
-async function generatePlan() {
+let userPlanChoices = {};
+
+function generatePlan() {
     const dest = document.getElementById('qb-destination').value;
-    const date = document.getElementById('qb-date').value;
-    const budget = document.getElementById('qb-budget').value;
-    const companions = document.getElementById('qb-companions').value;
+    const days = document.getElementById('qb-days').value || "1";
+    const budget = document.getElementById('qb-budget').value || "1000";
+    const people = document.getElementById('qb-people').value || "1";
+    const prefs = document.getElementById('qb-preferences').value || "general exploring";
 
     if(!dest) return alert("Please enter a destination!");
     
-    nextQB(5);
+    nextQB(6);
     const planBox = document.getElementById('qb-plan-content');
-    planBox.innerHTML = "<div class='loader'></div> Reasoning with DeepSeek-Concierge...";
+    userPlanChoices = { dest, days, budget, people, prefs };
+    
+    // Step 1: Transport Choice
+    planBox.innerHTML = `
+        <div style="margin-bottom: 2rem;">
+            <b>🤖 Agent:</b> I am analyzing routes to ${dest}. To optimize your budget of $${budget}, please review your transport options:
+        </div>
+        <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+            <div style="flex: 1; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #f8fafc;">
+                <h4 style="margin-bottom: 1rem; color: #0f172a; font-size: 1.6rem;">✈️ Option A: Flight</h4>
+                <ul style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #475569; padding-left: 2rem;">
+                    <li><b style="color: #10b981;">Pros:</b> Extremely fast, skip terrain.</li>
+                    <li><b style="color: #ef4444;">Cons:</b> Higher CO2 footprint, airport wait times.</li>
+                    <li style="margin-top: .5rem;"><b style="color: #38bdf8;">Why choose this?</b> Best if you have limited days and want to maximize your actual time at the destination.</li>
+                </ul>
+                <button onclick="handlePlanChoice('transport', 'Flight', this.closest('#qb-plan-content'))" class="btn" style="width: 100%; background: #38bdf8; padding: 1rem; font-size: 1.4rem;">Select Flight</button>
+            </div>
+            <div style="flex: 1; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #f8fafc;">
+                <h4 style="margin-bottom: 1rem; color: #0f172a; font-size: 1.6rem;">🚆 Option B: Train</h4>
+                <ul style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #475569; padding-left: 2rem;">
+                    <li><b style="color: #10b981;">Pros:</b> Scenic views, highly sustainable.</li>
+                    <li><b style="color: #ef4444;">Cons:</b> Takes significantly longer.</li>
+                    <li style="margin-top: .5rem;"><b style="color: #38bdf8;">Why choose this?</b> Best if you love the journey itself, have lots of time, or want a greener footprint.</li>
+                </ul>
+                <button onclick="handlePlanChoice('transport', 'Train', this.closest('#qb-plan-content'))" class="btn" style="width: 100%; background: #10b981; padding: 1rem; font-size: 1.4rem;">Select Train</button>
+            </div>
+        </div>
+    `;
+}
 
+window.handlePlanChoice = function(type, choice, box) {
+    userPlanChoices[type] = choice;
+    
+    if (type === 'transport') {
+        box.innerHTML = `
+            <div style="margin-bottom: 2rem;">
+                <b>🤖 Agent:</b> Great, ${choice} secured! Now, regarding your preferences for "${userPlanChoices.prefs}", here are two tailored itineraries:
+            </div>
+            <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                <div style="flex: 1; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #fcf6e5;">
+                    <h4 style="margin-bottom: 1rem; color: #0f172a; font-size: 1.6rem;">🏛️ Plan A: Heritage & Culture</h4>
+                    <ul style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #475569; padding-left: 2rem;">
+                        <li><b style="color: #10b981;">Pros:</b> Deeply educational, iconic photos.</li>
+                        <li><b style="color: #ef4444;">Cons:</b> Can be crowded, heavy walking.</li>
+                        <li style="margin-top: .5rem;"><b style="color: #f59e0b;">Why choose this?</b> Perfect if you want to understand the deep history of the city and see the main landmarks.</li>
+                    </ul>
+                    <button onclick="handlePlanChoice('places', 'Historical & Culture', this.closest('#qb-plan-content'))" class="btn" style="width: 100%; background: #f59e0b; padding: 1rem; font-size: 1.4rem;">Lock Plan A</button>
+                </div>
+                <div style="flex: 1; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #f4ecfc;">
+                    <h4 style="margin-bottom: 1rem; color: #0f172a; font-size: 1.6rem;">🌳 Plan B: Outdoors & Adventure</h4>
+                    <ul style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #475569; padding-left: 2rem;">
+                        <li><b style="color: #10b981;">Pros:</b> Relaxing, away from tourist traps.</li>
+                        <li><b style="color: #ef4444;">Cons:</b> Heavily dependent on good weather.</li>
+                        <li style="margin-top: .5rem;"><b style="color: #8b5cf6;">Why choose this?</b> Ideal if you want a local, authentic, and refreshing experience away from crowds.</li>
+                    </ul>
+                    <button onclick="handlePlanChoice('places', 'Outdoor & Adventure', this.closest('#qb-plan-content'))" class="btn" style="width: 100%; background: #8b5cf6; padding: 1rem; font-size: 1.4rem;">Lock Plan B</button>
+                </div>
+            </div>
+        `;
+    } else if (type === 'places') {
+        box.innerHTML = `
+            <div style="margin-bottom: 2rem;">
+                <b>🤖 Agent:</b> Choice locked. Finally, let's establish a disruption contingency plan for your group of ${userPlanChoices.people}:
+            </div>
+            <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                <div style="flex: 1; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #ffeeee;">
+                    <h4 style="margin-bottom: 1rem; color: #0f172a; font-size: 1.6rem;">🚕 Pivot Strategy + Cabs</h4>
+                    <ul style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #475569; padding-left: 2rem;">
+                        <li><b style="color: #10b981;">Pros:</b> Zero missed events, super comfortable.</li>
+                        <li><b style="color: #ef4444;">Cons:</b> More exhausting, higher cab fees.</li>
+                        <li style="margin-top: .5rem;"><b style="color: #ef4444;">Why choose this?</b> Choose this if you absolutely do not want to miss any planned activities and don't mind a tighter schedule.</li>
+                    </ul>
+                    <button onclick="handlePlanChoice('final', 'Pivot & Cab', this.closest('#qb-plan-content'))" class="btn" style="width: 100%; background: #ef4444; padding: 1rem; font-size: 1.2rem;">Select Pivot</button>
+                </div>
+                <div style="flex: 1; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #e0f2fe;">
+                    <h4 style="margin-bottom: 1rem; color: #0f172a; font-size: 1.6rem;">🚇 Skip Activities + Metro</h4>
+                    <ul style="font-size: 1.3rem; margin-bottom: 1.5rem; color: #475569; padding-left: 2rem;">
+                        <li><b style="color: #10b981;">Pros:</b> Keeps the trip relaxed, extremely cheap.</li>
+                        <li><b style="color: #ef4444;">Cons:</b> You will have to skip some planned sights.</li>
+                        <li style="margin-top: .5rem;"><b style="color: #3b82f6;">Why choose this?</b> Best if you prefer a stress-free trip and are okay with missing a few minor spots.</li>
+                    </ul>
+                    <button onclick="handlePlanChoice('final', 'Skip & Metro', this.closest('#qb-plan-content'))" class="btn" style="width: 100%; background: #3b82f6; padding: 1rem; font-size: 1.2rem;">Select Skip</button>
+                </div>
+            </div>
+        `;
+    } else if (type === 'final') {
+        box.innerHTML = `<div class='loader'></div> Generating your Final Master Itinerary...`;
+        fetchFinalPlan(box);
+    }
+};
+
+async function fetchFinalPlan(box) {
     try {
         const res = await fetch('/ai/plan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ destination: dest, date: date, budget: budget, companions: companions })
+            body: JSON.stringify(userPlanChoices)
         });
         const data = await res.json();
-        
-        // Advanced markdown parsing for better UI presentation
         let htmlPlan = data.plan
             .replace(/\n\n/g, '<br><br>')
             .replace(/\n/g, '<br>')
             .replace(/\*\*(.*?)\*\*/g, '<b style="color: var(--primary);">$1</b>')
             .replace(/#### (.*?)(<br>|$)/g, '<h4 style="font-size: 1.8rem; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: .5rem; margin-top: 1rem; margin-bottom: 1rem;">$1</h4>')
             .replace(/• (.*?)(<br>|$)/g, '<li style="margin-left: 2rem; margin-bottom: .5rem;">$1</li>');
-            
-        planBox.innerHTML = htmlPlan;
+        box.innerHTML = htmlPlan;
     } catch(e) {
-        planBox.innerHTML = "Error generating plan. Please try again.";
+        box.innerHTML = "Error generating plan. Please try again.";
     }
 }
 
@@ -187,15 +322,19 @@ function confirmQuickBook() {
 
 // UI Feature Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Show Welcome Popup on load
-    const welcomeModal = document.getElementById('welcome-onload-modal');
-    if (welcomeModal && window.location.pathname === '/') {
-        welcomeModal.style.display = 'flex';
-        setTimeout(() => {
-            welcomeModal.style.opacity = '1';
-            const content = welcomeModal.querySelector('.welcome-modal-content');
-            if(content) content.style.transform = 'translateY(0)';
-        }, 100);
+    // Welcome popup logic removed per user request so AI suggestions only happen on manual click
+
+    // Real-time background polling for Disruption Detector (refresh every 3 seconds)
+    if(document.getElementById('ai-notifications')) {
+        setInterval(refreshItineraryStatus, 3000);
+    }
+
+    if (window.location.search.includes('quickbook=1')) {
+        const modal = document.getElementById('quick-book-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            nextQB(1);
+        }
     }
 
     const loginBtn = document.querySelector('#login-btn');

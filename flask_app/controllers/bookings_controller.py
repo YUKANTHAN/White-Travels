@@ -97,6 +97,16 @@ def book_flight():
     flash("Flight booked successfully!", "success")
     return redirect('/')
 
+@app.route('/book_package', methods=['POST'])
+def book_package():
+    if not session.get('user_id') or session['user_id'] == 5:
+        return redirect('/')
+    data = {**request.form, 'user_id': session['user_id'], 'type': 'Package'}
+    data.pop('card_number', None)
+    Booking.save(data)
+    flash("Package booked successfully! Enjoy your trip.", "success")
+    return redirect('/')
+
 # --- TRAINS & HOTELS ---
 @app.route('/trains')
 def trains(): return render_template('trains.html')
@@ -165,6 +175,7 @@ def create_simulated_booking():
     new_flight = {
         "status": "Confirmed",
         "flight_no": data.get('flight_no', 'AA123'),
+        "train_no": data.get('train_no', 'TRN808'),
         "pnr": "SIM-ITN-" + str(random.randint(1000, 9999))
     }
     with open('itinerary.json', 'w') as f:
@@ -174,12 +185,7 @@ def create_simulated_booking():
 @app.route('/ai/plan', methods=['POST'])
 def ai_plan():
     data = request.get_json()
-    dest = data.get('destination', 'Unknown')
-    date = data.get('date', 'TBD')
-    budget = str(data.get('budget', '0'))
-    companions = data.get('companions', 'Solo')
-    
-    plan_text = concierge.plan_trip(dest, date, budget, companions)
+    plan_text = concierge.plan_trip(data)
     return jsonify({"plan": plan_text})
 
 @app.route('/ai/ask', methods=['POST'])
