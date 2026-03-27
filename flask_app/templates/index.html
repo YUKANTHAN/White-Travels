@@ -4,19 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="White Travels | Autonomous Agentic Travel Concierge">
+    <meta name="description" content="White Travels — Autonomous Agentic AI Travel Concierge. Book flights, hotels, trains, and get AI-powered trip planning with disruption recovery.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title>White Travels | Autonomous Agentic Travel Concierge</title>
-    <style>
-        .booking-card:hover {
-            transform: translateY(-1rem);
-            background: var(--primary) !important;
-        }
-        .booking-card:hover i, .booking-card:hover h3, .booking-card:hover p {
-            color: #fff !important;
-        }
-    </style>
 </head>
 <body>
     
@@ -34,7 +25,7 @@
 
         <div class="icons" style="display: flex; align-items: center; gap: 1.5rem;">
             <div class="notification-container" style="position: relative; display: inline-block;">
-                <i class="fas fa-bell" id="notification-btn" style="cursor: pointer; position: relative;">
+                <i class="fas fa-bell" id="notification-btn" aria-label="Notifications" style="cursor: pointer; position: relative;">
                     <span id="notification-badge" style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold; display: none;">0</span>
                 </i>
                 <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 450px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
@@ -44,8 +35,8 @@
                     </div>
                 </div>
             </div>
-            <i class="fas fa-search" id="search-btn"></i>
-            <i class="fas fa-user" id="login-btn"></i>
+            <i class="fas fa-search" id="search-btn" aria-label="Search"></i>
+            <i class="fas fa-user" id="login-btn" aria-label="Login"></i>
             {% if session.user_id != 5 %}
             <a href="/logout" class="btn" id="logout" style="margin-left: auto;">Logout</a>
             {% endif %}
@@ -87,7 +78,7 @@
     <!-- WELCOME / QUICK BOOK POPUP ON LOAD -->
     <div id="welcome-onload-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10002; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease;">
         <div class="welcome-modal-content" style="background: #fff; width: 600px; padding: 5rem; border-radius: 2rem; position: relative; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.5s ease;">
-            <i class="fas fa-times" onclick="closeWelcomePopup()" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #94a3b8;"></i>
+            <i class="fas fa-times" onclick="closeWelcomePopup()" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #94a3b8;" aria-label="Close"></i>
             
             <i class="fas fa-robot" style="font-size: 6rem; color: var(--primary); margin-bottom: 2rem;"></i>
             <h2 style="font-size: 3.5rem; color: #1e293b; margin-bottom: 1.5rem;">The AI Travel Engine.</h2>
@@ -101,7 +92,7 @@
     <!-- Login form popup  -->
     <div class="login-form-container" id="#login">
 
-        <i class="fas fa-times" id="form-close"></i>
+        <i class="fas fa-times" id="form-close" aria-label="Close login"></i>
 
         <form action="/login" method="post">
             <h3>login</h3>
@@ -134,39 +125,32 @@
                     <div class="ai-msg">Adventure is Worthwhile. Tell me your destination or just say <b>"Surprise me"</b> to begin.</div>
                 </div>
                 <div class="hero-chat-footer">
-                    <input type="text" id="hero-chat-input" placeholder="Where do you want to go?" onkeydown="if(event.key==='Enter') sendHeroChat()">
-                    <button onclick="sendHeroChat()"><i class="fas fa-paper-plane"></i></button>
+                    <input type="text" id="hero-chat-input" placeholder="Where do you want to go?" onkeydown="if(event.key==='Enter') sendHeroChat()" aria-label="Chat input">
+                    <button onclick="sendHeroChat()" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
 
         <div class="photo-container">
-            <img src="{{url_for('static', filename='img/home.jpg')}}" alt="Home section background picture">
+            <img src="{{url_for('static', filename='img/home.jpg')}}" alt="Scenic travel destination background">
         </div>
     </section>
 
-
-    <style>@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(56, 189, 248, 0); } 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }</style>
-    <!-- booking section starts  -->
-
-    </section>
-    <!-- home ends -->
-
     <!-- ADVANCED CHAT MODAL -->
     <div id="ai-chat-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10005; align-items: center; justify-content: center;">
-        <div id="chat-backdrop" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(15px); transition: 0.5s;"></div>
+        <div id="chat-backdrop" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(15px);"></div>
         <div id="chat-box-container" style="background: rgba(2, 6, 23, 0.95); width: 60rem; height: 80rem; border-radius: 3rem; border: 1px solid #38bdf8; overflow: hidden; position: relative; z-index: 10; box-shadow: 0 5rem 10rem rgba(0,0,0,0.8); display: flex; flex-direction: column;">
             <div style="padding: 3rem; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
                     <div style="width: 1rem; height: 1rem; background: #10b981; border-radius: 50%; box-shadow: 0 0 1rem #10b981;"></div>
                     <h3 style="font-size: 2.2rem; color: #fff;"><i class="fas fa-robot"></i> Deep Concierge AI</h3>
                 </div>
-                <i class="fas fa-times" onclick="toggleChat()" style="font-size: 2.5rem; color: #94a3b8; cursor: pointer;"></i>
+                <i class="fas fa-times" onclick="toggleChat()" style="font-size: 2.5rem; color: #94a3b8; cursor: pointer;" aria-label="Close chat"></i>
             </div>
 
             <div id="chat-messages" style="flex: 1; padding: 3rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem;">
                 <div class="ai-msg" style="align-self: flex-start; background: #1e293b; padding: 2rem; border-radius: 2rem 2rem 2rem 0; color: #fff; font-size: 1.5rem; max-width: 80%;">
-                    Hello! I am your Autonomous Travel Specialist. How can I orchestration your journey today?
+                    Hello! I am your Autonomous Travel Specialist. How can I orchestrate your journey today?
                 </div>
             </div>
 
@@ -179,15 +163,21 @@
 
             <div style="padding: 3rem; background: #0f172a; border-top: 1px solid #1e293b;">
                 <form onsubmit="handleChatSubmit(event)" style="display: flex; gap: 1.5rem;">
-                    <input id="chat-input" type="text" placeholder="Tell me your destination or query..." style="flex: 1; background: #020617; border: 1px solid #334155; padding: 1.5rem 2.5rem; border-radius: 1.5rem; color: #fff; font-size: 1.6rem;">
-                    <button type="submit" class="btn" style="padding: 1rem 2.5rem;"><i class="fas fa-paper-plane"></i></button>
+                    <input id="chat-input" type="text" placeholder="Tell me your destination or query..." style="flex: 1; background: #020617; border: 1px solid #334155; padding: 1.5rem 2.5rem; border-radius: 1.5rem; color: #fff; font-size: 1.6rem;" aria-label="Chat query">
+                    <button type="submit" class="btn" style="padding: 1rem 2.5rem;" aria-label="Send"><i class="fas fa-paper-plane"></i></button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- TRAVEL EXPERT HUB (REPLACED BY NEWER VERSION BELOW) -->
-
+    <!-- BOOKING SECTION -->
+    <section class="book" id="book" style="padding: 8rem 9%;">
+        <h1 class="heading">
+            <span>b</span>
+            <span>o</span>
+            <span>o</span>
+            <span>k</span>
+            <span class="space"></span>
             <span>n</span>
             <span>o</span>
             <span>w</span>
@@ -196,26 +186,26 @@
         <div class="row">
 
             <div class="image">
-                <img src="{{url_for('static', filename='img/White Travels_logo.png')}}" alt="Booking White Travels logo">
+                <img src="{{url_for('static', filename='img/White Travels_logo.png')}}" alt="White Travels logo" loading="lazy">
             </div>
 
-            <div class="booking-options" style="display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center; width: 100%; padding: 2rem;">
-                <a href="/flights" class="booking-card" style="flex: 1; min-width: 25rem; padding: 4rem; background: #fff; border-radius: 2rem; border: 1px solid rgba(56, 189, 248, 0.1); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all .3s ease;">
-                    <i class="fas fa-plane" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem; transition: transform 0.3s ease;"></i>
-                    <h3 style="font-size: 2.5rem; color: #333;">Book Flights</h3>
-                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Travel the world with our premium airline partners.</p>
+            <div class="booking-options">
+                <a href="/flights" class="booking-card">
+                    <i class="fas fa-plane"></i>
+                    <h3>Book Flights</h3>
+                    <p>Travel the world with our premium airline partners.</p>
                 </a>
                 
-                <a href="/hotels" class="booking-card" style="flex: 1; min-width: 25rem; padding: 4rem; background: #fff; border-radius: 2rem; border: 1px solid rgba(56, 189, 248, 0.1); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all .3s ease;">
-                    <i class="fas fa-hotel" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem; transition: transform 0.3s ease;"></i>
-                    <h3 style="font-size: 2.5rem; color: #333;">Book Hotels</h3>
-                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Find the perfect stay at the best prices guaranteed.</p>
+                <a href="/hotels" class="booking-card">
+                    <i class="fas fa-hotel"></i>
+                    <h3>Book Hotels</h3>
+                    <p>Find the perfect stay at the best prices guaranteed.</p>
                 </a>
 
-                <a href="/trains" class="booking-card" style="flex: 1; min-width: 25rem; padding: 4rem; background: #fff; border-radius: 2rem; border: 1px solid rgba(56, 189, 248, 0.1); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: all .3s ease;">
-                    <i class="fas fa-train" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem; transition: transform 0.3s ease;"></i>
-                    <h3 style="font-size: 2.5rem; color: #333;">Book Trains</h3>
-                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Scenic routes and seamless city-to-city travel.</p>
+                <a href="/trains" class="booking-card">
+                    <i class="fas fa-train"></i>
+                    <h3>Book Trains</h3>
+                    <p>Scenic routes and seamless city-to-city travel.</p>
                 </a>
             </div>
 
@@ -239,11 +229,10 @@
         <div class="box-container">
 
             <div class="box">
-                <img src="{{url_for('static', filename='img/cabo.jpg')}}" alt="Cabo San Lucas vacation package image">
+                <img src="{{url_for('static', filename='img/cabo.jpg')}}" alt="Cabo San Lucas vacation package" loading="lazy">
                 <div class="content">
                     <h3> <i class="fas fa-map-marker-alt"></i>Cabo San Lucas</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
-                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <p>Sun-drenched beaches, dramatic rock arches, and world-class margaritas — Cabo is where desert meets the sea in spectacular fashion.</p>
                     <div class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -252,16 +241,15 @@
                         <i class="far fa-star"></i>
                     </div>
                     <div class="price">$800 <span>$1,100</span></div>
-                    <a href="/destinations/cabo" class="btn" id="btn">More Info</a>
+                    <a href="/destinations/cabo" class="btn" id="btn-cabo">More Info</a>
                 </div>
             </div>
 
             <div class="box">
-                <img src="{{url_for('static', filename='img/london.jpg')}}" alt="London vacation package image">
+                <img src="{{url_for('static', filename='img/london.jpg')}}" alt="London vacation package" loading="lazy">
                 <div class="content">
                     <h3> <i class="fas fa-map-marker-alt"></i>London</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
-                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <p>Royal palaces, world-class museums, and iconic red buses — London blends centuries of history with cutting-edge culture and nightlife.</p>
                     <div class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -275,11 +263,10 @@
             </div>
 
             <div class="box">
-                <img src="{{url_for('static', filename='img/tokyo.jpg')}}" alt="Tokyo vacation package image">
+                <img src="{{url_for('static', filename='img/tokyo.jpg')}}" alt="Tokyo vacation package" loading="lazy">
                 <div class="content">
                     <h3> <i class="fas fa-map-marker-alt"></i>Tokyo</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
-                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <p>Neon-lit streets, ancient temples, and the world's freshest sushi — Tokyo is a mesmerizing fusion of futuristic tech and timeless tradition.</p>
                     <div class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -293,11 +280,10 @@
             </div>
 
             <div class="box">
-                <img src="{{url_for('static', filename='img/honolulu.jpg')}}" alt="Honolulu vacation package image">
+                <img src="{{url_for('static', filename='img/honolulu.jpg')}}" alt="Honolulu vacation package" loading="lazy">
                 <div class="content">
                     <h3> <i class="fas fa-map-marker-alt"></i>Honolulu</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
-                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <p>Crystal-clear waters, volcanic hikes, and aloha spirit — Honolulu is the ultimate tropical paradise where adventure meets relaxation.</p>
                     <div class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -311,11 +297,10 @@
             </div>
 
             <div class="box">
-                <img src="{{url_for('static', filename='img/new_york.jpg')}}" alt="New York vacation package image">
+                <img src="{{url_for('static', filename='img/new_york.jpg')}}" alt="New York City vacation package" loading="lazy">
                 <div class="content">
                     <h3> <i class="fas fa-map-marker-alt"></i>New York City</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
-                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <p>The city that never sleeps — from Broadway shows and Central Park to the Statue of Liberty and legendary pizza by the slice.</p>
                     <div class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -329,11 +314,10 @@
             </div>
 
             <div class="box">
-                <img src="{{url_for('static', filename='img/paris.jpg')}}" alt="Paris vacation package image">
+                <img src="{{url_for('static', filename='img/paris.jpg')}}" alt="Paris vacation package" loading="lazy">
                 <div class="content">
                     <h3> <i class="fas fa-map-marker-alt"></i>Paris</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
-                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <p>The City of Light — where the Eiffel Tower sparkles nightly, art fills every corner, and croissants are a way of life.</p>
                     <div class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -368,7 +352,7 @@
         <div class="row">
 
             <div class="image">
-                <img src="{{url_for('static', filename='img/contact-img.svg')}}" alt="Contact us logo">
+                <img src="{{url_for('static', filename='img/contact-img.svg')}}" alt="Contact us illustration" loading="lazy">
             </div>
 
             <form action="/contact" id="contact_form" method="post">
@@ -400,11 +384,10 @@
 
         </div>
     </section>
-    <!-- AI DISRUPTION RECOVERY SECTION (HACKATHON EDITION) -->
+
     <!-- WORKSPACE SKILL: TRAVEL EXPERT LIVE MONITORING -->
-    <section class="travel-expert-monitor" id="travel-expert-monitor" style="background: #020617; padding: 10rem 2rem; color: #fff; overflow: hidden; position: relative;">
-        <!-- Background Accents -->
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.05) 0%, transparent 50%), radial-gradient(circle at 90% 90%, rgba(225, 29, 72, 0.05) 0%, transparent 50%); border-top: 1px solid #1e293b;"></div>
+    <section class="travel-expert-monitor" id="travel-expert-monitor">
+        <div class="travel-expert-bg"></div>
 
         <h1 class="heading" style="margin-bottom: 6rem;">
             <span style="color: #38bdf8;">T</span>
@@ -422,65 +405,65 @@
             <span>t</span>
         </h1>
 
-        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr)); gap: 4rem; position: relative; z-index: 1;">
+        <div class="travel-expert-grid">
             
             <!-- Itinerary Live Card -->
-            <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); padding: 5rem; border-radius: 2.5rem; border: 1px solid #1e293b; box-shadow: 0 2rem 5rem rgba(0,0,0,0.4); position: relative;">
-                <div style="position: absolute; top: 3rem; right: 3rem; padding: .6rem 1.5rem; background: #020617; border: 1px solid #38bdf8; border-radius: 2rem; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">PNR LIVE ASSET</div>
+            <div class="te-card">
+                <div class="te-pnr-badge">PNR LIVE ASSET</div>
                 
                 <h3 style="font-size: 3rem; margin-bottom: 3rem; color: #f8fafc;"><i class="fas fa-ticket-alt" style="color: #38bdf8;"></i> Active Itinerary</h3>
                 
-                <div id="itinerary-live-box" style="margin-bottom: 4rem; padding: 3rem; background: #020617; border-radius: 1.5rem; border-left: 5px solid #38bdf8;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dotted #334155;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">PASSENGER</span>
-                        <b id="itinerary-passenger" style="font-size: 2.2rem; color: #f59e0b;">---</b>
+                <div id="itinerary-live-box" class="te-live-box">
+                    <div class="te-row" style="padding-bottom: 1.5rem; border-bottom: 1px dotted #334155;">
+                        <span class="te-row-label">PASSENGER</span>
+                        <b id="itinerary-passenger" class="te-row-value" style="color: #f59e0b;">---</b>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">FLIGHT NO</span>
-                        <b id="itinerary-flight" style="font-size: 2.2rem; color: #fff;">---</b>
+                    <div class="te-row">
+                        <span class="te-row-label">FLIGHT NO</span>
+                        <b id="itinerary-flight" class="te-row-value">---</b>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">TRAIN NO</span>
-                        <b id="itinerary-train" style="font-size: 2.2rem; color: #fff;">---</b>
+                    <div class="te-row">
+                        <span class="te-row-label">TRAIN NO</span>
+                        <b id="itinerary-train" class="te-row-value">---</b>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding: 1.5rem; background: #0f172a; border-radius: 1rem;">
+                    <div class="te-detail-box">
                         <div>
-                            <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: .5rem;">SEAT / CLASS</span>
-                            <b id="itinerary-seat" style="font-size: 1.6rem; color: #fff;">---</b>
+                            <span class="te-detail-label">SEAT / CLASS</span>
+                            <b id="itinerary-seat" class="te-detail-value">---</b>
                         </div>
                         <div style="text-align: right;">
-                            <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: .5rem;">GATE / TIME</span>
-                            <b id="itinerary-gate" style="font-size: 1.6rem; color: #fff;">---</b>
+                            <span class="te-detail-label">GATE / TIME</span>
+                            <b id="itinerary-gate" class="te-detail-value">---</b>
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">STATUS</span>
+                    <div class="te-row">
+                        <span class="te-row-label">STATUS</span>
                         <b id="itinerary-status" style="font-size: 1.8rem; color: #10b981; padding: .4rem 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: .5rem;">---</b>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">VISA STATUS</span>
+                    <div class="te-row">
+                        <span class="te-row-label">VISA STATUS</span>
                         <b id="itinerary-visa" style="font-size: 1.7rem; color: #facc15;">---</b>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
+                <div class="te-button-row">
                     <button onclick="triggerSkillDisruption()" class="btn" style="flex: 2; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
-                    <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;"><i class="fas fa-sync"></i> Refresh</button>
+                    <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;" aria-label="Refresh status"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
 
-                <!-- Feature 4: Crisis Card Link -->
-                <div style="padding: 2.5rem; background: rgba(225, 29, 72, 0.05); border: 1px dashed #e11d48; border-radius: 1.5rem; text-align: center;">
-                    <a href="/itinerary/offline" style="color: #e11d48; text-decoration: none; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+                <!-- Crisis Card Link -->
+                <div class="te-crisis-link">
+                    <a href="/itinerary/offline">
                         <i class="fas fa-file-download"></i> Download Offline Crisis Card (PDF)
                     </a>
                 </div>
             </div>
 
-            <!-- Agent Reasoning Cluster + New Feature Widgets -->
+            <!-- Agent Reasoning Cluster + Feature Widgets -->
             <div style="display: grid; gap: 3rem;">
-                <!-- Feature 3 & 6: Financials & Sustainability -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
+                <!-- Financials & Sustainability -->
+                <div class="te-financials-grid">
+                    <div class="te-card-secondary">
                         <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-wallet"></i> Expense Hub</h4>
                         <div id="budget-bar-container" style="width: 100%; height: 1rem; background: #020617; border-radius: 1rem; margin-bottom: 1.5rem; overflow: hidden;">
                             <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width 1s ease;"></div>
@@ -490,23 +473,25 @@
                             <span style="font-size: 1.2rem; color: #94a3b8;">Limit: <b id="itinerary-limit" style="color: #fff;">$2500</b></span>
                         </div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b; text-align: center;">
+                    <div class="te-card-secondary" style="text-align: center;">
                         <h4 style="font-size: 1.4rem; color: #10b981; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-leaf"></i> Eco-Footprint</h4>
                         <b id="itinerary-carbon" style="font-size: 2.5rem; color: #fff; display: block; margin-bottom: 1rem;">---</b>
                         <p style="font-size: 1.1rem; color: #94a3b8;">AI suggests Carbon Offset</p>
                     </div>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 2.5rem; border: 1px solid #1e293b; position: relative; min-height: 400px; display: flex; flex-direction: column;">
+
+                <!-- Workspace Skill Log -->
+                <div class="te-agent-card">
                     <h3 style="font-size: 2.22rem; color: #38bdf8; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1.5rem;">
                         <i class="fas fa-robot"></i> Workspace Skill Log
                     </h3>
                     
-                    <div id="skill-reasoning-log" style="flex: 1; background: #020617; border-radius: 1rem; padding: 2.5rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 1.3rem; color: #38bdf8; line-height: 1.8; overflow-y: auto;">
+                    <div id="skill-reasoning-log" class="skill-log-area">
                         <p style="color: #475569;">// Waiting for itinerary.json change...</p>
                         <p style="color: #475569;">// Skill [travel-expert] Indexed.</p>
                     </div>
 
-                    <div style="margin-top: 2.5rem; padding: 2rem; background: rgba(56, 189, 248, 0.05); border-radius: 1rem; border-left: 4px solid #38bdf8;">
+                    <div class="te-action-notice">
                         <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: .8rem;">AUTONOMOUS ACTION DETECTED</h4>
                         <p id="skill-action-desc" style="font-size: 1.2rem; color: #94a3b8;">Listening for flight cancellations in your workspace...</p>
                     </div>
@@ -519,7 +504,7 @@
     <!-- QUICK BOOK MULTI-STEP MODAL -->
     <div id="quick-book-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center;">
         <div style="background: #fff; width: 700px; padding: 4rem; border-radius: 2rem; position: relative;">
-            <i class="fas fa-times" onclick="closeQuickBook()" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #666;"></i>
+            <i class="fas fa-times" onclick="closeQuickBook()" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #666;" aria-label="Close quick book"></i>
             
             <div id="qb-step-1" class="qb-step">
                 <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">Where are you going?</h2>
@@ -564,7 +549,42 @@
         </div>
     </div>
 
-    <!-- PREMIUM AI CHAT WIDGET (DEEP CONCIERGE) -->
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3><span>W</span>hite Travels</h3>
+                <p>Your Autonomous AI Travel Concierge. We combine artificial intelligence, real-time disruption recovery, and agentic workflows to deliver seamless journeys worldwide.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="/flights">Flights</a>
+                <a href="/hotels">Hotels</a>
+                <a href="/trains">Trains</a>
+                <a href="/#packages">Packages</a>
+            </div>
+            <div class="footer-col">
+                <h4>AI Features</h4>
+                <a href="javascript:void(0)" onclick="toggleAIAssistant()">AI Assistant</a>
+                <a href="/#travel-expert-monitor">Disrupt Detector</a>
+                <a href="/itinerary/offline">Crisis Card</a>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <a href="/#contact">Contact Us</a>
+                <a href="mailto:support@whitetravels.ai">Email Support</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 White Travels. Powered by Deep Concierge AI.</p>
+            <div class="social-icons">
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+    </footer>
 
     <script src="{{url_for('static', filename='js/script.js')}}"></script>
     <script>

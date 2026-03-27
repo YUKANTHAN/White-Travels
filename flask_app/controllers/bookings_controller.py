@@ -4,21 +4,20 @@ import os
 import json
 import time
 import random
-import requests # Added for n8n integration
+import requests
 from fpdf import FPDF
 import io
 
-# Update this with your n8n Production Webhook URL
+# n8n Webhook URLs
 N8N_DISRUPTION_WEBHOOK = "https://your-n8n-instance.cloud/webhook/disruption-monitor"
 N8N_CHECK_WEBHOOK = "https://suthan06it.app.n8n.cloud/webhook/check-disruption"
+
 from flask_app.models.users import User
 from flask_app.models.bookings import Booking
 from flask_app.models.contacts import Contact
 from flask_app.agent_manager import agent
 from flask_app.utils.api_clients import api_hub
 from ai_agent_backend.deep_concierge import DeepConcierge
-from fpdf import FPDF
-import io
 
 # Singleton for AI Chat
 concierge = DeepConcierge()
@@ -175,7 +174,8 @@ def get_itinerary_status():
                 with open('itinerary.json', 'w') as f:
                     json.dump([itinerary], f, indent=4)
         return jsonify(itinerary)
-    except:
+    except (FileNotFoundError, json.JSONDecodeError, IndexError) as e:
+        print(f"[ITINERARY] No active itinerary: {e}")
         return jsonify({"status": "No Active Itinerary"})
 
 @app.route('/itinerary/disruption', methods=['POST'])
@@ -222,8 +222,8 @@ def trigger_itinerary_disruption():
                 else:
                     print("[LIVE]: No disruptions found by AI Search.")
                     return jsonify({"success": True, "status": "CONFIRMED", "reason": "No disruptions found in location."})
-        except:
-            print("[DEMO]: n8n offline or timeout. Falling back to Simulated Disruption for Hackathon demo.")
+        except (requests.RequestException, ValueError, KeyError) as e:
+            print(f"[DEMO]: n8n offline or timeout ({e}). Falling back to Simulated Disruption.")
         
         # --- DEMO FALLBACK: FORCE DISRUPTION ---
         # In a real app, we'd only rebook if there's a real issue. 

@@ -1,13 +1,21 @@
 // --- SEARCH & UI NAVIGATION ---
 function headerSearch(e) {
     if(e) e.preventDefault();
-    const dest = document.getElementById('search-bar').value;
-    if(dest.toLowerCase().includes('cabo')) window.location.href = '/destinations/cabo';
-    else if(dest.toLowerCase().includes('tokyo')) window.location.href = '/destinations/tokyo';
-    else if(dest.toLowerCase().includes('london')) window.location.href = '/destinations/london';
-    else if(dest.toLowerCase().includes('paris')) window.location.href = '/destinations/paris';
-    else if(dest.toLowerCase().includes('new york')) window.location.href = '/destinations/new_york_city';
-    else if(dest.toLowerCase().includes('honolulu')) window.location.href = '/destinations/honolulu';
+    const dest = (document.getElementById('search-bar').value || '').toLowerCase();
+    const routeMap = {
+        'cabo': '/destinations/cabo',
+        'tokyo': '/destinations/tokyo',
+        'london': '/destinations/london',
+        'paris': '/destinations/paris',
+        'new york': '/destinations/new_york_city',
+        'honolulu': '/destinations/honolulu'
+    };
+    for (const [key, url] of Object.entries(routeMap)) {
+        if (dest.includes(key)) {
+            window.location.href = url;
+            return;
+        }
+    }
 }
 
 // --- CHAT & MODAL LOGIC (Floating AI Modal) ---
@@ -203,7 +211,7 @@ window.requestPayment = function(type, id) {
         
         modal.innerHTML = `
             <div style="background: #fff; width: 500px; padding: 4rem; border-radius: 2rem; position: relative;">
-                <i class="fas fa-times" onclick="document.getElementById('global-payment-modal').style.display='none'" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #666;"></i>
+                <i class="fas fa-times" onclick="document.getElementById('global-payment-modal').style.display='none'" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #666;" aria-label="Close payment"></i>
                 <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: #0f172a;"><i class="fas fa-lock" style="color: #10b981;"></i> Secure Checkout</h2>
                 <p style="font-size: 1.4rem; color: #64748b; margin-bottom: 2rem;">Please enter your card details to finalize the transaction for this ${type}.</p>
                 <form onsubmit="confirmGlobalPayment(event)" style="display: flex; flex-direction: column; gap: 1.5rem;">
@@ -505,13 +513,35 @@ function confirmQuickBook() {
     requestPayment(type, id);
 }
 
+// Smart Polling: pause when tab is hidden, resume when visible
+let pollIntervalId = null;
+
+function startSmartPolling() {
+    if (pollIntervalId) clearInterval(pollIntervalId);
+    pollIntervalId = setInterval(refreshItineraryStatus, 10000);
+}
+
+function stopPolling() {
+    if (pollIntervalId) {
+        clearInterval(pollIntervalId);
+        pollIntervalId = null;
+    }
+}
+
 // UI Feature Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Welcome popup logic removed per user request so AI suggestions only happen on manual click
-
-    // Real-time background polling for Disruption Detector (refresh every 15 seconds for better performance)
+    // Real-time background polling with visibility awareness
     if(document.getElementById('ai-notifications')) {
-        setInterval(refreshItineraryStatus, 15000);
+        startSmartPolling();
+        
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopPolling();
+            } else {
+                refreshItineraryStatus(); // Immediate refresh on tab return
+                startSmartPolling();
+            }
+        });
     }
 
     if (window.location.search.includes('quickbook=1')) {
