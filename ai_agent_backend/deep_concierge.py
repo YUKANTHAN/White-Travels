@@ -376,9 +376,8 @@ class DeepConcierge:
                 )
             elif unknown_city_name:
                 response_parts.append(
-                    f"Interesting! You mentioned {unknown_city_name}. I'm building a detailed profile for this destination. "
-                    f"In the meantime, I can help you with travel planning, hotels, local transport, and food recommendations for {unknown_city_name}. "
-                    "Just ask a more specific question like: What are the tourist spots? or What is the best time to visit?"
+                    f"That sounds like a fascinating destination! While I am still refining my local database for '{unknown_city_name}', I am fully capable of helping you plan a complete route there. "
+                    f"I can track real-time weather, assist with visa eligibility, and book flights or trains for you for '{unknown_city_name}'. Should we start looking at the available itineraries together?"
                 )
             else:
                 response_parts.append(

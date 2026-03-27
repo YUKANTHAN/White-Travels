@@ -522,6 +522,7 @@ async function fetchFinalPlan(box) {
         });
         const data = await res.json();
         let htmlPlan = data.plan
+            .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="width: 100%; height: auto; border-radius: 1rem; margin-bottom: 2rem; border: 1px solid #e2e8f0; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">')
             .replace(/\n\n/g, '<br><br>')
             .replace(/\n/g, '<br>')
             .replace(/\*\*(.*?)\*\*/g, '<b style="color: var(--primary);">$1</b>')

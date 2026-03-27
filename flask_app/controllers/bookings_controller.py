@@ -259,9 +259,9 @@ def trigger_itinerary_disruption():
         except Exception as inner_ex:
             print(f"[N8N CALL FAIL]: {inner_ex}. Falling back to Demo.")
 
-        # --- DEMO FALLBACK: FORCE DISRUPTION ---
+        # --- DEMO FALLBACK: FORCE DISRUPTION FOR IMPACT ---
         itinerary['status'] = 'CANCELLED'
-        itinerary['disruption_reason'] = "AI Search detected severe turbulence and landing constraints at destination. Rerouting required for safety."
+        itinerary['disruption_reason'] = "AI Sentinel detected severe weather anomalies and ground infrastructure constraints at your destination. Recovery Agent is calculating optimal re-routing..."
         with open('itinerary.json', 'w') as f:
             json.dump([itinerary], f, indent=4)
         
