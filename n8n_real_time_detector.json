@@ -1,0 +1,82 @@
+{
+  "name": "Live Search Disruption Detector",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-disruption",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "8b9e67a7-5421-4ea7-9a00-1c385a49704f",
+      "name": "Webhook (Check Status)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "chatConversational",
+        "promptType": "define",
+        "text": "=You are the \"White Travels Crisis Specialist.\" Your mission is to protect passenger itineraries from real-world disruptions in real-time.\n\nOPERATING PROTOCOLS:\n1. MONITOR: Receive the passenger's current location and destination from the Webhook.\n2. RESEARCH: Immediately use the Google Search (SerpApi) tool to search for: \"Current disasters, weather alerts, or airport closures in {{ $node[\"Webhook (Check Status)\"].json.body.dest }}\". \n3. ANALYZE: \n   - If a disaster is confirmed, identify if it impacts the mode of transport.\n   - If no disaster is found, report \"Status: CLEAR\" and end the task.\n4. ACTION (The Rebooking Flow):\n   - If flight is impacted: Search for the next available flights using the Duffel Tool.\n   - If no flights exist: Search for \"Trains from Origin to {{ $node[\"Webhook (Check Status)\"].json.body.dest }}\" using Google Search.\n   - If all transport is blocked: Use the RapidAPI Hotels tool to find a 4-star crisis stay.\n5. OUTPUT: Return a structured JSON object containing: {\"status\": \"DISRUPTED\", \"reason\": \"[Detailed Reason]\", \"alternative_booking\": { \"status\": \"Confirmed Booking Details Here...\" }, \"agent_action\": \"REBOOKED\"}.\n\nERROR HANDLING:\nIf you cannot reach an API or the local server via the provided Ngrok URL, generate a 'SIMULATED_RECOVERY' log so the passenger is not left without information.",
+        "options": {}
+      },
+      "id": "af005118-eb09-40cb-ba12-b91cbbd250be",
+      "name": "AI Web Search Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.1,
+      "position": [
+        380,
+        300
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "your-openai-key",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const response = JSON.parse($input.item.json.output);\n  return response;\n} catch (e) {\n  return {\n    \"status\": \"CANCELLED\",\n    \"reason\": \"AI Assumed Cancelled (Parse Error: \" + $input.item.json.output + \")\"\n  };\n}"
+      },
+      "id": "dd1bb176-583c-4a37-b43e-a89c916298ce",
+      "name": "Parse JSON Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook (Check Status)": {
+      "main": [
+        [
+          {
+            "node": "AI Web Search Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Web Search Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

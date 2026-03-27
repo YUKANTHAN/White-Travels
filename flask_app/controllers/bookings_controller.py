@@ -4,6 +4,11 @@ import os
 import json
 import time
 import random
+import requests # Added for n8n integration
+
+# Update this with your n8n Production Webhook URL
+N8N_DISRUPTION_WEBHOOK = "https://your-n8n-instance.cloud/webhook/disruption-monitor"
+N8N_CHECK_WEBHOOK = "https://suthan06it.app.n8n.cloud/webhook/check-disruption"
 from flask_app.models.users import User
 from flask_app.models.bookings import Booking
 from flask_app.agent_manager import agent
@@ -170,25 +175,86 @@ def get_itinerary_status():
 
 @app.route('/itinerary/disruption', methods=['POST'])
 def trigger_itinerary_disruption():
+    print(f"[AGENT]: Pinging n8n for real-time disaster check...")
     try:
         with open('itinerary.json', 'r') as f:
             itinerary = json.load(f)[0]
-        itinerary['status'] = 'CANCELLED'
-        with open('itinerary.json', 'w') as f:
-            json.dump([itinerary], f, indent=4)
-        return jsonify({"success": True})
+            
+        payload = {
+            "pnr": itinerary.get("pnr"),
+            "transport_id": itinerary.get("flight_no") or itinerary.get("train_no") or "Unknown",
+            "route": f"from {itinerary.get('origin', 'Origin')} to {itinerary.get('destination', 'Dest')}",
+            "dest": itinerary.get('destination', 'Unknown')
+        }
+        
+        # Step 1: Trigger the n8n Workflow
+        response = requests.post("https://suthan06it.app.n8n.cloud/webhook/check-disruption", json=payload, timeout=40)
+        
+        if response.status_code == 200:
+            result = response.json()
+            
+            # Step 2: If AI found a disaster, update your local files
+            if result.get("status") == "DISRUPTED":
+                # Create the recovery itinerary based on the AI's alternative booking
+                recovery = {
+                    "status": "REBOOKED",
+                    "passenger_name": itinerary.get("passenger_name", "Primary Passenger"),
+                    "flight_no": "AI-RECOVERY",
+                    "disruption_reason": result.get("reason", "Disrupted by Crisis Agent"),
+                    "details": str(result.get("alternative_booking", "Crisis Stay or Alternative Transport"))
+                }
+                with open('itinerary.json', 'w') as f:
+                    json.dump([recovery], f, indent=4)
+                print(f"[SUCCESS]: AI Rebooked alternative due to: {result.get('reason')}")
+                return jsonify({"success": True, "status": "CANCELLED", "reason": result.get('reason')})
+            else:
+                print("[LIVE]: No disruptions found by AI Search.")
+                return jsonify({"success": True, "status": "CONFIRMED", "reason": "No disruptions found in location."})
+                
+        else:
+            print(f"[ERROR]: n8n returned status {response.status_code}")
+            return jsonify({"success": True, "status": "CANCELLED", "reason": f"n8n AI Cloud unreachable (HTTP {response.status_code})"})
+            
+    except requests.exceptions.RequestException as e:
+        print(f"[ALERT]: Connection failed. Check if Ngrok is running! {e}")
+        return jsonify({"success": True, "status": "CANCELLED", "reason": f"Live Network Error: {e}"})
     except Exception as e:
         return jsonify({"error": str(e)})
 
 @app.route('/itinerary/rebook', methods=['POST'])
 def trigger_rebook_logic():
-    import subprocess
-    script_path = os.path.join('.agent', 'skills', 'travel-expert', 'scripts', 'rebook_logic.py')
+    # --- ACTIVATE N8N BRAIN ---
     try:
-        result = subprocess.run(['python', script_path], capture_output=True, text=True)
-        return jsonify({"success": True, "output": result.stdout})
+        with open('itinerary.json', 'r') as f:
+            booking_data = json.load(f)[0]
+        
+        # Add additional metadata for the AI Agent
+        booking_data['passenger_email'] = "user@example.com"
+        booking_data['dest'] = "Paris" # Mock destination for weather lookup
+
+        # Send the "Ping" to n8n
+        print(f"--- Pinging n8n Brain at {N8N_DISRUPTION_WEBHOOK} ---")
+        response = requests.post(N8N_DISRUPTION_WEBHOOK, json=booking_data, timeout=10)
+        
+        # If n8n returns a recovery strategy right away
+        n8n_result = response.json() if response.status_code == 200 else {}
+        rebooking_strategy = n8n_result.get('rebooking_strategy', "n8n Brain: Processing fallback recovery options...")
+
+        return jsonify({
+            "success": True, 
+            "output": f"[N8N RECOVERY]: {rebooking_strategy}",
+            "n8n_status": response.status_code
+        })
     except Exception as e:
-        return jsonify({"error": str(e)})
+        # Fallback to local script if n8n is unreachable
+        print(f"n8n unreachable: {e}. Falling back to local rebooker.")
+        import subprocess
+        script_path = os.path.join('.agent', 'skills', 'travel-expert', 'scripts', 'rebook_logic.py')
+        try:
+            result = subprocess.run(['python', script_path], capture_output=True, text=True)
+            return jsonify({"success": True, "output": result.stdout})
+        except:
+            return jsonify({"error": str(e)})
 
 @app.route('/booking/simulate', methods=['POST'])
 def create_simulated_booking():

@@ -1,0 +1,154 @@
+{
+  "name": "White Travels Master Disruption Brain",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "disruption-monitor",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook (Receive Disruption)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.status }}",
+              "value2": "CANCELLED"
+            }
+          ]
+        }
+      },
+      "id": "if-cancelled",
+      "name": "IF CANCELLED?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "cityName": "={{ $node[\"Webhook (Receive Disruption)\"].json.body.dest || 'Delhi' }}"
+      },
+      "id": "weather-node",
+      "name": "Get Weather",
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        540,
+        300
+      ],
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "your-weather-cred",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-4o-mini",
+        "messages": "=[ \n  { \"role\": \"system\", \"content\": \"You are the White Travels AI Recovery Agent. A customer booking (PNR: {{ $node[\\\"Webhook (Receive Disruption)\\\"].json.body.pnr }}) is CANCELLED. Weather in destination: {{ $json.weather[0].description }}. Suggest a recovery plan using alternative trains or flights.\" },\n  { \"role\": \"user\", \"content\": \"Find the best rebooking solution for passenger {{ $node[\\\"Webhook (Receive Disruption)\\\"].json.body.passenger_name }}.\" }\n]",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "ai-agent-deepseek",
+      "name": "DeepSeek AI Agent",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        760,
+        300
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "your-deepseek-cred",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node[\"Webhook (Receive Disruption)\"].json.body.passenger_email || 'customer@example.com' }}",
+        "subject": "⚠️ Urgent: Disruption Recovery Plan for {{ $node[\"Webhook (Receive Disruption)\"].json.body.pnr }}",
+        "message": "=Hello {{ $node[\"Webhook (Receive Disruption)\"].json.body.passenger_name }},\n\nOur AI system has detected a disruption in your journey.\n\nWEATHER UPDATE: {{ $node[\"Get Weather\"].json.weather[0].description }}\n\nAI RECOVERY SUGGESTION:\n{{ $json.choices[0].message.content }}\n\nSafe Travels,\nWhite Travels AI",
+        "options": {}
+      },
+      "id": "email-notify",
+      "name": "Send Gmail Notification",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        980,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "your-gmail-cred",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook (Receive Disruption)": {
+      "main": [
+        [
+          {
+            "node": "IF CANCELLED?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF CANCELLED?": {
+      "main": [
+        [
+          {
+            "node": "Get Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {}
+}

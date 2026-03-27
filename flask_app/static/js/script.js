@@ -202,7 +202,7 @@ async function refreshItineraryStatus() {
 
 async function triggerSkillDisruption() {
     const log = document.getElementById('skill-reasoning-log');
-    if(log) log.innerHTML = "<p style='color: #fbbf24;'>[SYSTEM]: Sending disruption signal to itinerary.json...</p>";
+    if(log) log.innerHTML = "<p style='color: #a855f7;'><i class='fas fa-search'></i> [SYSTEM]: Pinging suthan06it.app.n8n.cloud... AI Agent is actively searching Google...</p>";
     
     try {
         const res = await fetch('/itinerary/disruption', { method: 'POST' });
@@ -211,20 +211,26 @@ async function triggerSkillDisruption() {
         if(data.success) {
             await refreshItineraryStatus();
             if(log) {
-                log.innerHTML += "<p style='color: #e11d48;'>[ALERT]: itinerary.json status changed to CANCELLED.</p>";
-                log.innerHTML += "<p style='color: #fff;'>[SKILL]: Workspace Watcher activated.</p>";
-                
-                setTimeout(async () => {
-                    log.innerHTML += "<p style='color: #38bdf8;'>[AGENT]: rebook_logic.py triggered. Querying Amadeus API...</p>";
-                    const rebookRes = await fetch('/itinerary/rebook', { method: 'POST' });
-                    const rebookData = await rebookRes.json();
+                if(data.status === 'CANCELLED') {
+                    log.innerHTML += `<p style='color: #e11d48;'>[ALERT]: AI Search determined status is CANCELLED.</p>`;
+                    log.innerHTML += `<p style='color: #fca5a5;'>[LIVE REASON]: ${data.reason}</p>`;
+                    log.innerHTML += "<p style='color: #fff;'>[SKILL]: Workspace Watcher activated.</p>";
                     
-                    if(rebookData.success) {
-                        const output = rebookData.output.split('\n').filter(l => l.includes('[REBOOKER]')).join('<br>');
-                        log.innerHTML += `<p style='color: #10b981;'>[SUCCESS]: <br>${output}</p>`;
-                        await refreshItineraryStatus();
-                    }
-                }, 2000);
+                    setTimeout(async () => {
+                        log.innerHTML += "<p style='color: #38bdf8;'>[AGENT]: rebook_logic.py triggered. Querying recovery AI...</p>";
+                        const rebookRes = await fetch('/itinerary/rebook', { method: 'POST' });
+                        const rebookData = await rebookRes.json();
+                        
+                        if(rebookData.success) {
+                            const output = rebookData.output.split('\\n').filter(l => l.includes('[REBOOKER]') || l.includes('[N8N RECOVERY]')).join('<br>');
+                            log.innerHTML += `<p style='color: #10b981;'>[SUCCESS]: <br>${output}</p>`;
+                            await refreshItineraryStatus();
+                        }
+                    }, 2000);
+                } else {
+                    log.innerHTML += `<p style='color: #10b981;'>[OK]: Checked Web - Flight/Train is CONFIRMED.</p>`;
+                    log.innerHTML += `<p style='color: #6ee7b7;'>[LIVE REASON]: ${data.reason}</p>`;
+                }
             }
         }
     } catch (err) { console.error("Disruption trigger failed:", err); }
@@ -377,7 +383,8 @@ async function fetchFinalPlan(box) {
 function confirmQuickBook() {
     closeQuickBook();
     const type = userPlanChoices.transport ? userPlanChoices.transport.toLowerCase() : 'flight';
-    const id = "AI-" + type.toUpperCase() + "-" + Math.floor(Math.random() * 9000 + 1000);
+    const fakeNum = Math.floor(Math.random() * 900 + 100);
+    const id = type === 'flight' ? "DL" + fakeNum : "TRN" + fakeNum;
     requestPayment(type, id);
 }
 
