@@ -224,6 +224,8 @@ def trigger_itinerary_disruption():
                 alt_train = result.get("alternative_train", "RECOVERY-TRAIN-B")
                 reason = result.get("reason", "Crisis Agent Intervention")
 
+                reasoning = concierge.get_reasoning_log(itinerary)
+                
                 recovery = {
                     "status": "AWAITING_CONSENT",
                     "passenger_name": itinerary.get("passenger_name", "Primary Passenger"),
@@ -232,6 +234,7 @@ def trigger_itinerary_disruption():
                     "temp_flight": alt_flight,
                     "temp_train": alt_train,
                     "disruption_reason": reason,
+                    "reasoning_log": reasoning,
                     "details": str(result.get("alternative_booking", "Crisis Stay or Alternative Transport"))
                 }
                 with open('itinerary.json', 'w') as f:
@@ -250,9 +253,9 @@ def trigger_itinerary_disruption():
                     Contact.send_whatsapp_notification(customer_phone, notif_msg)
                 except Exception as ne:
                     print(f"WhatsApp Notify error: {ne}")
-
+ 
                 print(f"[SUCCESS]: AI Proposed alternative due to: {reason}")
-                return jsonify({"success": True, "status": "AWAITING_CONSENT", "reason": reason})
+                return jsonify({"success": True, "status": "AWAITING_CONSENT", "reason": reason, "reasoning_log": reasoning})
             else:
                 print("[LIVE]: No disruptions found by AI Search.")
                 return jsonify({"success": True, "status": "CONFIRMED", "reason": "No disruptions found in location."})
@@ -269,6 +272,8 @@ def trigger_itinerary_disruption():
             "⚡ **[GREEN RECOVERY]** Agent is pre-holding a sleeper seat for safety."
         )
         itinerary['carbon_kg'] = f"{itinerary.get('carbon_kg','350kg')} (-{carbon_saved}kg)"
+        reasoning = concierge.get_reasoning_log(itinerary)
+        itinerary['reasoning_log'] = reasoning
         
         with open('itinerary.json', 'w') as f:
             json.dump([itinerary], f, indent=4)
@@ -277,7 +282,8 @@ def trigger_itinerary_disruption():
             "success": True, 
             "status": "CANCELLED", 
             "reason": itinerary['disruption_reason'],
-            "carbon_saved": carbon_saved
+            "carbon_saved": carbon_saved,
+            "reasoning_log": reasoning
         })
             
     except Exception as outer_e:

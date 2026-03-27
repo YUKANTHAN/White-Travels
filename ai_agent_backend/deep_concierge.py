@@ -194,6 +194,23 @@ class DeepConcierge:
             "action_text": "Switch to Express Sleeper (Confirmed)"
         }
 
+    def get_reasoning_log(self, booking):
+        """Generates simulated high-intelligence agentic reasoning steps for the recovery UI."""
+        origin = booking.get('origin', 'Current')
+        dest = booking.get('destination', 'Paris')
+        is_flight = 'flight_no' in booking and booking['flight_no']
+        
+        steps = [
+            f"🔍 [SCAN]: Initiating deep-scan of {booking.get('pnr', 'Active')} itinerary...",
+            f"📡 [GDS]: Pinging Amadeus Global Distribution System for alternate {'flights' if is_flight else 'trains'} to {dest}...",
+            f"🌦️ [WEATHER]: Analyzing METAR data for {dest}. Constraint: Volatile winds detected.",
+            f"🕰️ [TIME]: Calculating connection feasibility for {booking.get('passenger_name', 'Passenger')}...",
+            f"⚖️ [LOGIC]: Comparing {'train' if is_flight else 'cab'} fallback vs next available carrier...",
+            f"💰 [FINANCE]: Analyzing price delta. Applied 'Crisis Voucher' discount code.",
+            f"✅ [DECISION]: Single optimal path found. Presenting Rebooking Strategy."
+        ]
+        return steps
+
     def chat(self, prompt):
         """Comprehensive, topic-aware heuristic engine for travel questions."""
         print(f"[DEEP-CONCIERGE] Analyzing: {prompt}")

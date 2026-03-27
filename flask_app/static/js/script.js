@@ -172,8 +172,8 @@ async function sendHeroChat() {
         if (lowerPrompt.includes('plan') || lowerPrompt.includes('want to go') || lowerPrompt.includes('book') || lowerPrompt.includes('surprise me')) {
             const planBtn = document.createElement('button');
             planBtn.className = 'btn';
-            planBtn.style.cssText = 'margin-top: 1rem; padding: 0.8rem 1.5rem; font-size: 1.2rem; display: block;';
-            planBtn.innerHTML = '<i class="fas fa-magic"></i> Open Detailed Planner';
+            planBtn.style.cssText = 'margin-top: 1.5rem; padding: 1.2rem 2.5rem; font-size: 1.4rem; display: flex; align-items: center; gap: 1rem; border-radius: 2.5rem; background: #38bdf8; border: none; color: white; cursor: pointer; box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); font-weight: 500;';
+            planBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Open Detailed Planner';
             planBtn.onclick = () => toggleAIAssistant();
             botDiv.appendChild(planBtn);
         }
