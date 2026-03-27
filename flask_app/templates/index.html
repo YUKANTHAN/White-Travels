@@ -456,6 +456,14 @@
                             </div>
                         </div>
 
+                        <div id="te-visa-sentry" style="border-top: 1px solid #1e293b; padding-top: 1.5rem; margin-bottom: 1.5rem;">
+                            <span class="te-row-label">AI DIPLOMAT: VISA & BORDER SENTRY</span>
+                            <div style="display: flex; align-items: center; gap: 1.5rem; margin-top: .5rem;">
+                                <i class="fas fa-passport" style="font-size: 2rem; color: #10b981;"></i>
+                                <b id="itinerary-visa-badge" style="font-size: 1.5rem; color: #10b981;">✅ SECURED (SCHENGEN E-VISA)</b>
+                            </div>
+                        </div>
+
                         <div id="itinerary-stress-monitor" style="border-top: 1px solid #1e293b; padding-top: 1.5rem;">
                             <span class="te-row-label">TRAVELER EMOTIONAL STRESS (AI SENTIMENT)</span>
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: .5rem;">
@@ -479,6 +487,7 @@
                         </div>
 
                         <button onclick="triggerHotelSync()" class="btn" style="flex: 1; background: #4f46e5; border: none; font-size: 1.4rem;"><i class="fas fa-hotel"></i> AI Hotel Sync</button>
+                        <button onclick="triggerGroundSync()" class="btn" style="flex: 1; background: #020617; color: #fff; border: 1px solid #334155; font-size: 1.4rem;"><i class="fas fa-car"></i> AI Ride Sync</button>
                         <button onclick="triggerFamilyNotify()" class="btn" style="flex: 1; background: #10b981; border: none; font-size: 1.4rem;"><i class="fas fa-users"></i> Notify Family</button>
                         <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;" aria-label="Refresh status"><i class="fas fa-sync"></i> Refresh</button>
                     </div>
@@ -873,6 +882,32 @@
             });
         }
 
+        async function triggerGroundSync() {
+            const log = document.getElementById('skill-reasoning-log');
+            const btn = document.querySelector('button[onclick="triggerGroundSync()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Coordinating...';
+            btn.disabled = true;
+
+            const steps = [
+                { msg: "Connecting to Global Ride-Hailing Mesh (Uber/Lyft)...", color: "#38bdf8" },
+                { msg: "Analyzing new arrival timestamp at Paris Gare du Nord...", color: "#38bdf8" },
+                { msg: "Agentic Handshake: Re-routing ground transfer to 23:15...", color: "#38bdf8" },
+                { msg: "SUCCESS: Driver matched for new arrival time. Link dispatched to traveler.", color: "#10b981" }
+            ];
+
+            for (const step of steps) {
+                const p = document.createElement('p');
+                p.style.color = step.color;
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] <b>[GROUND-BOT]:</b> ${step.msg}`;
+                log.prepend(p);
+                await new Promise(r => setTimeout(r, 900));
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
         async function triggerSkillDisruption() {
             const btn = document.querySelector('button[onclick="triggerSkillDisruption()"]');
             const log = document.getElementById('skill-reasoning-log');
@@ -885,6 +920,7 @@
             const steps = [
                 { msg: "Pinging Global Sentinel Mesh...", color: "#38bdf8" },
                 { msg: "Analyzing flight-to-train feasibility for current passenger cluster...", color: "#38bdf8" },
+                { msg: "Schengen Visa Check: ✅ CONFIRMED via AI Diplomat Sentry.", color: "#10b981" },
                 { msg: "Checking destination weather forecast... [ALERT: Sleet Detected]", color: "#facc15" },
                 { msg: isNomad ? "NOMAD MODE: Prioritizing High-Speed Wi-Fi & Lounge Access..." : "Calculating budget & sustainability impact...", color: isNomad ? "#38bdf8" : "#10b981" },
                 { msg: "Finalizing autonomous recovery path...", color: "#10b981" }
