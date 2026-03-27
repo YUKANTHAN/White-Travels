@@ -252,27 +252,32 @@
                     <div id="ai-plan-output" style="font-size: 1.6rem; color: #f8fafc; line-height: 1.8;">
                         <p style="color: #94a3b8;">Chat with Deep Concierge to generate a live itinerary...</p>
                     </div>
-
                     <div style="margin-top: 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div style="background: #020617; padding: 2rem; border-radius: 1.5rem; border: 1px solid #1e293b;">
                              <span style="color: #38bdf8; font-size: 1.2rem;"><i class="fas fa-wallet"></i> SPENT</span>
-                             <b id="itinerary-spent" style="display:block; font-size: 2rem; color: #fff; margin: .5rem 0;">$0</b>
+                             <div style="display: flex; justify-content: space-between; align-items: baseline; margin: .5rem 0;">
+                                 <b id="itinerary-spent" style="font-size: 2.5rem; color: #fff;">$0</b>
+                                 <span style="font-size: 1.2rem; color: #64748b;">Limit: <b id="itinerary-limit" style="color: #fff;">$2500</b></span>
+                             </div>
                              <div style="width: 100%; height: .5rem; background: #1e293b; border-radius: 1rem; overflow: hidden;">
-                                <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: #38bdf8; transition: 1s;"></div>
+                                 <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: #38bdf8; transition: 1s;"></div>
                              </div>
                         </div>
                         <div style="background: #020617; padding: 2rem; border-radius: 1.5rem; border: 1px solid #1e293b; text-align: center;">
                              <span style="color: #10b981; font-size: 1.2rem;"><i class="fas fa-leaf"></i> ECO-FOOTPRINT</span>
                              <b id="itinerary-carbon" style="display:block; font-size: 2.22rem; color: #fff; margin-top: .5rem;">---</b>
+                             <p style="font-size: 1.1rem; color: #94a3b8; margin-top: .5rem;">AI suggests Carbon Offset</p>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Live Reasoning Console -->
                 <div style="background: rgba(2, 6, 23, 0.8); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
-                    <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 1.5rem;"><i class="fas fa-terminal"></i> AI Analysis Flow</h4>
-                    <div id="skill-reasoning-log" style="height: 12rem; overflow-y: auto; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">
-                         Waiting for task generation...
+                    <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 1.5rem;"><i class="fas fa-terminal"></i> Workspace Skill Log</h4>
+                    <div id="skill-reasoning-log" style="height: 12rem; overflow-y: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 1.2rem; color: #38bdf8; line-height: 1.6;">
+                         <p style="color: #475569;">// Waiting for itinerary.json change...</p>
+                         <p style="color: #475569;">// Skill [travel-expert] Indexed.</p>
                     </div>
                 </div>
             </div>
@@ -488,120 +493,6 @@
                 <input type="submit" class="btn" value="Send Message">
             </form>
 
-        </div>
-    </section>
-    <!-- AI DISRUPTION RECOVERY SECTION (HACKATHON EDITION) -->
-    <!-- WORKSPACE SKILL: TRAVEL EXPERT LIVE MONITORING -->
-    <section class="travel-expert-monitor" id="travel-expert-monitor" style="background: #020617; padding: 10rem 2rem; color: #fff; overflow: hidden; position: relative;">
-        <!-- Background Accents -->
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.05) 0%, transparent 50%), radial-gradient(circle at 90% 90%, rgba(225, 29, 72, 0.05) 0%, transparent 50%); border-top: 1px solid #1e293b;"></div>
-
-        <h1 class="heading" style="margin-bottom: 6rem;">
-            <span style="color: #38bdf8;">T</span>
-            <span>r</span>
-            <span>a</span>
-            <span>v</span>
-            <span>e</span>
-            <span>l</span>
-            <span class="space"></span>
-            <span style="color: #38bdf8;">E</span>
-            <span>x</span>
-            <span>p</span>
-            <span>e</span>
-            <span>r</span>
-            <span>t</span>
-        </h1>
-
-        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr)); gap: 4rem; position: relative; z-index: 1;">
-            
-            <!-- Itinerary Live Card -->
-            <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); padding: 5rem; border-radius: 2.5rem; border: 1px solid #1e293b; box-shadow: 0 2rem 5rem rgba(0,0,0,0.4); position: relative;">
-                <div style="position: absolute; top: 3rem; right: 3rem; padding: .6rem 1.5rem; background: #020617; border: 1px solid #38bdf8; border-radius: 2rem; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">PNR LIVE ASSET</div>
-                
-                <h3 style="font-size: 3rem; margin-bottom: 3rem; color: #f8fafc;"><i class="fas fa-ticket-alt" style="color: #38bdf8;"></i> Active Itinerary</h3>
-                
-                <div id="itinerary-live-box" style="margin-bottom: 4rem; padding: 3rem; background: #020617; border-radius: 1.5rem; border-left: 5px solid #38bdf8;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dotted #334155;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">PASSENGER</span>
-                        <b id="itinerary-passenger" style="font-size: 2.2rem; color: #f59e0b;">---</b>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">FLIGHT NO</span>
-                        <b id="itinerary-flight" style="font-size: 2.2rem; color: #fff;">---</b>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">TRAIN NO</span>
-                        <b id="itinerary-train" style="font-size: 2.2rem; color: #fff;">---</b>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding: 1.5rem; background: #0f172a; border-radius: 1rem;">
-                        <div>
-                            <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: .5rem;">SEAT / CLASS</span>
-                            <b id="itinerary-seat" style="font-size: 1.6rem; color: #fff;">---</b>
-                        </div>
-                        <div style="text-align: right;">
-                            <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: .5rem;">GATE / TIME</span>
-                            <b id="itinerary-gate" style="font-size: 1.6rem; color: #fff;">---</b>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">STATUS</span>
-                        <b id="itinerary-status" style="font-size: 1.8rem; color: #10b981; padding: .4rem 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: .5rem;">---</b>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">VISA STATUS</span>
-                        <b id="itinerary-visa" style="font-size: 1.7rem; color: #facc15;">---</b>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
-                    <button onclick="triggerSkillDisruption()" class="btn" style="flex: 2; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
-                    <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;"><i class="fas fa-sync"></i> Refresh</button>
-                </div>
-
-                <!-- Feature 4: Crisis Card Link -->
-                <div style="padding: 2.5rem; background: rgba(225, 29, 72, 0.05); border: 1px dashed #e11d48; border-radius: 1.5rem; text-align: center;">
-                    <a href="/itinerary/offline" style="color: #e11d48; text-decoration: none; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
-                        <i class="fas fa-file-download"></i> Download Offline Crisis Card (PDF)
-                    </a>
-                </div>
-            </div>
-
-            <!-- Agent Reasoning Cluster + New Feature Widgets -->
-            <div style="display: grid; gap: 3rem;">
-                <!-- Feature 3 & 6: Financials & Sustainability -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
-                        <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-wallet"></i> Expense Hub</h4>
-                        <div id="budget-bar-container" style="width: 100%; height: 1rem; background: #020617; border-radius: 1rem; margin-bottom: 1.5rem; overflow: hidden;">
-                            <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width 1s ease;"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="font-size: 1.2rem; color: #94a3b8;">Spent: <b id="itinerary-spent" style="color: #fff;">$0</b></span>
-                            <span style="font-size: 1.2rem; color: #94a3b8;">Limit: <b id="itinerary-limit" style="color: #fff;">$2500</b></span>
-                        </div>
-                    </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b; text-align: center;">
-                        <h4 style="font-size: 1.4rem; color: #10b981; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-leaf"></i> Eco-Footprint</h4>
-                        <b id="itinerary-carbon" style="font-size: 2.5rem; color: #fff; display: block; margin-bottom: 1rem;">---</b>
-                        <p style="font-size: 1.1rem; color: #94a3b8;">AI suggests Carbon Offset</p>
-                    </div>
-                </div>
-                <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 2.5rem; border: 1px solid #1e293b; position: relative; min-height: 400px; display: flex; flex-direction: column;">
-                    <h3 style="font-size: 2.22rem; color: #38bdf8; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1.5rem;">
-                        <i class="fas fa-robot"></i> Workspace Skill Log
-                    </h3>
-                    
-                    <div id="skill-reasoning-log" style="flex: 1; background: #020617; border-radius: 1rem; padding: 2.5rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 1.3rem; color: #38bdf8; line-height: 1.8; overflow-y: auto;">
-                        <p style="color: #475569;">// Waiting for itinerary.json change...</p>
-                        <p style="color: #475569;">// Skill [travel-expert] Indexed.</p>
-                    </div>
-
-                    <div style="margin-top: 2.5rem; padding: 2rem; background: rgba(56, 189, 248, 0.05); border-radius: 1rem; border-left: 4px solid #38bdf8;">
-                        <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: .8rem;">AUTONOMOUS ACTION DETECTED</h4>
-                        <p id="skill-action-desc" style="font-size: 1.2rem; color: #94a3b8;">Listening for flight cancellations in your workspace...</p>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
