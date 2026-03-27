@@ -270,14 +270,14 @@ def create_simulated_booking():
         "class_type": "Economy",
         "gate": "D4",
         "boarding_time": "10:15 AM",
-        "flight_no": data.get('flight_no', ''),
+        "flight_no": data.get('flight_no', 'UA204'),
         "train_no": data.get('train_no', ''),
         "hotel": data.get('hotel', ''),
         "pnr": "SIM-ITN-" + str(random.randint(1000, 9999)),
         # NEW AGENT FEATURES
         "budget_limit": 2500,
         "budget_spent": random.randint(300, 600),
-        "carbon_kg": f"{random.randint(150, 650)}kg",
+        "carbon_kg": "450kg",
         "visa_status": "Processing Draft..."
     }
     with open('itinerary.json', 'w') as f:
