@@ -1,0 +1,16 @@
+[
+    {
+        "status": "REBOOKED",
+        "passenger_name": "J. Doe (Primary)",
+        "seat": "12A",
+        "class_type": "Economy",
+        "gate": "D4",
+        "boarding_time": "10:15 AM",
+        "flight_no": "FL-NEW-505",
+        "train_no": "TRN430",
+        "hotel": "Marriott Elite Suite",
+        "pnr": "SIM-ITN-4024",
+        "disruption_reason": "Simulated Default (suthan n8n cloud unreachable)",
+        "recovery_time_ms": 305
+    }
+]

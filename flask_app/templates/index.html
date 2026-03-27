@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="White Travels | Autonomous Agentic Travel Concierge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>White Travels | Autonomous Agentic Travel Concierge</title>
+    <style>
+        .booking-card:hover {
+            transform: translateY(-1rem);
+            background: var(--primary) !important;
+        }
+        .booking-card:hover i, .booking-card:hover h3, .booking-card:hover p {
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <a href="/" class="logo"><span>W</span>hite Travels</a>
+
+        <nav class="navbar">
+            <a href="/flights"><i class="fas fa-plane"></i> Flights</a>
+            <a href="/hotels"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/trains"><i class="fas fa-train"></i> Trains</a>
+            <a href="javascript:void(0)" onclick="toggleAIAssistant()" style="color: #fbbf24; font-weight: bold;"><i class="fas fa-robot"></i> AI Assistant</a>
+            <a href="/#travel-expert-monitor" style="color: #e11d48; font-weight: bold;"><i class="fas fa-shield-alt"></i> Disrupt Detector</a>
+            <a href="/#contact"><i class="fas fa-headset"></i> Support</a>
+        </nav>
+
+        <div class="icons" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div class="notification-container" style="position: relative; display: inline-block;">
+                <i class="fas fa-bell" id="notification-btn" style="cursor: pointer; position: relative;">
+                    <span id="notification-badge" style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 1.2rem; font-weight: bold; display: none;">0</span>
+                </i>
+                <div id="ai-notifications" style="display: none; position: absolute; top: 150%; right: -50px; background: white; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.1); border-radius: 1rem; width: 450px; padding: 1.5rem; z-index: 1000; border: 1px solid var(--primary); text-align: left; cursor: default;">
+                    <h3 style="font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;"><i class="fas fa-shield-alt"></i> Disruption Command Center</h3>
+                    <div id="dynamic-notifications">
+                        <p style="font-size: 1.3rem; color: #666; text-align: center; padding: 1rem;">No recent disruptions detected.</p>
+                    </div>
+                </div>
+            </div>
+            <i class="fas fa-search" id="search-btn"></i>
+            <i class="fas fa-user" id="login-btn"></i>
+            {% if session.user_id != 5 %}
+            <a href="/logout" class="btn" id="logout" style="margin-left: auto;">Logout</a>
+            {% endif %}
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const notifBtn = document.getElementById('notification-btn');
+                const aiNotifs = document.getElementById('ai-notifications');
+                if(notifBtn && aiNotifs) {
+                    notifBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        aiNotifs.style.display = aiNotifs.style.display === 'none' ? 'block' : 'none';
+                    });
+                    document.addEventListener('click', function(e) {
+                        if (!notifBtn.contains(e.target) && !aiNotifs.contains(e.target)) {
+                            aiNotifs.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        </script>
+
+        <form action="javascript:void(0)" onsubmit="headerSearch(event)" class="search-bar-container">
+            <input type="search" id="search-bar" placeholder="Enter destination (e.g. Cabo, Tokyo)...">
+            <label for="search-bar" class="fas fa-search"></label>
+        </form>
+    </header>
+
+    {% with messages = get_flashed_messages(category_filter=['success']) %}
+      {% if messages %}
+        <div style="position: fixed; top: 8rem; left: 50%; transform: translateX(-50%); z-index: 2000; background: #28a745; color: white; padding: 1rem 3rem; border-radius: .5rem; font-size: 1.6rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);">
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- WELCOME / QUICK BOOK POPUP ON LOAD -->
+    <div id="welcome-onload-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10002; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease;">
+        <div class="welcome-modal-content" style="background: #fff; width: 600px; padding: 5rem; border-radius: 2rem; position: relative; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); transform: translateY(20px); transition: transform 0.5s ease;">
+            <i class="fas fa-times" onclick="closeWelcomePopup()" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #94a3b8;"></i>
+            
+            <i class="fas fa-robot" style="font-size: 6rem; color: var(--primary); margin-bottom: 2rem;"></i>
+            <h2 style="font-size: 3.5rem; color: #1e293b; margin-bottom: 1.5rem;">The AI Travel Engine.</h2>
+            <p style="font-size: 1.6rem; color: #64748b; margin-bottom: 3.5rem; line-height: 1.6;">Let Deep Concierge orchestrate your journey. Mixed-mode transport routing, live weather adaptation, local transit optimization, and delay contingencies arranged in seconds.</p>
+            
+            <button onclick="closeWelcomePopup(); document.getElementById('quick-book-modal').style.display = 'flex'; nextQB(1);" class="btn" style="background: #fbbf24; color: #000; font-size: 1.8rem; width: 100%; padding: 1.5rem; border-radius: 1rem;"><i class="fas fa-bolt"></i> Start Quick Book AI</button>
+            <p style="margin-top: 2rem; font-size: 1.4rem; color: var(--primary); font-weight: bold; cursor: pointer; text-decoration: underline;" onclick="closeWelcomePopup()">Or continue browsing</p>
+        </div>
+    </div>
+
+    <!-- Login form popup  -->
+    <div class="login-form-container" id="#login">
+
+        <i class="fas fa-times" id="form-close"></i>
+
+        <form action="/login" method="post">
+            <h3>login</h3>
+            <input type="email" name="email" class="box" placeholder="enter your email...">
+            {% for message in get_flashed_messages(category_filter = ['err_login_email']) %}
+            <p class="red">{{message}}</p>
+            {% endfor %}
+            <input type="password" name="password" class="box" placeholder="enter your password">
+            {% for message in get_flashed_messages(category_filter = ['err_login_password']) %}
+            <p class="red">{{message}}</p>
+            {% endfor %}
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <input type="submit" class="btn" value="Login Now" style="flex: 1;">
+                <button type="button" class="btn" id="quick-book-trigger" style="flex: 1; background: #fbbf24; border: none; color: #000;"><i class="fas fa-bolt"></i> Quick Book</button>
+            </div>
+            <p>Don't have an account? <a href="/register_now">Register Now</a></p>
+        </form>
+
+    </div>
+    <!-- home section starts -->
+
+    <section class="home" id="home">
+        <div class="content">
+            <h3>Adventure is Worthwhile</h3>
+            <p>Discover new places with us, adventure awaits</p>
+            <a href="javascript:void(0)" onclick="toggleChat()" class="btn">Discover More</a>
+        </div>
+
+        <div class="photo-container">
+            <img src="{{url_for('static', filename='img/home.jpg')}}" alt="Home section background picture">
+        </div>
+    </section>
+
+    <!-- FLOATING CHAT TRIGGER -->
+    <div onclick="toggleChat()" style="position: fixed; bottom: 4rem; right: 4rem; width: 7rem; height: 7rem; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10006; box-shadow: 0 1rem 3rem rgba(56, 189, 248, 0.4); animation: pulse 2s infinite;">
+        <i class="fas fa-comment-dots" style="font-size: 3rem; color: #000;"></i>
+    </div>
+    <style>@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(56, 189, 248, 0); } 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }</style>
+    <!-- booking section starts  -->
+
+    </section>
+    <!-- home ends -->
+
+    <!-- ADVANCED CHAT MODAL -->
+    <div id="ai-chat-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10005; align-items: center; justify-content: center;">
+        <div id="chat-backdrop" style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(15px); transition: 0.5s;"></div>
+        <div id="chat-box-container" style="background: rgba(2, 6, 23, 0.95); width: 60rem; height: 80rem; border-radius: 3rem; border: 1px solid #38bdf8; overflow: hidden; position: relative; z-index: 10; box-shadow: 0 5rem 10rem rgba(0,0,0,0.8); display: flex; flex-direction: column;">
+            <div style="padding: 3rem; background: #0f172a; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 1rem; height: 1rem; background: #10b981; border-radius: 50%; box-shadow: 0 0 1rem #10b981;"></div>
+                    <h3 style="font-size: 2.2rem; color: #fff;"><i class="fas fa-robot"></i> Deep Concierge AI</h3>
+                </div>
+                <i class="fas fa-times" onclick="toggleChat()" style="font-size: 2.5rem; color: #94a3b8; cursor: pointer;"></i>
+            </div>
+
+            <div id="chat-messages" style="flex: 1; padding: 3rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem;">
+                <div class="ai-msg" style="align-self: flex-start; background: #1e293b; padding: 2rem; border-radius: 2rem 2rem 2rem 0; color: #fff; font-size: 1.5rem; max-width: 80%;">
+                    Hello! I am your Autonomous Travel Specialist. How can I orchestration your journey today?
+                </div>
+            </div>
+
+            <div id="chat-suggestions" style="padding: 2rem 3rem; display: flex; flex-wrap: wrap; gap: 1rem; background: rgba(56, 189, 248, 0.05);">
+                <span onclick="chatSuggestion('Plan my trip to Paris')" style="padding: .8rem 1.5rem; border: 1px solid #38bdf8; color: #38bdf8; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">Plan Paris Trip</span>
+                <span onclick="chatSuggestion('Check my Visa Status')" style="padding: .8rem 1.5rem; border: 1px solid #facc15; color: #facc15; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">Check Visa</span>
+                <span onclick="chatSuggestion('Eco-friendly options?')" style="padding: .8rem 1.5rem; border: 1px solid #10b981; color: #10b981; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">Eco Options</span>
+                <span onclick="chatSuggestion('Show my tickets')" style="padding: .8rem 1.5rem; border: 1px solid #fff; color: #fff; border-radius: 2rem; font-size: 1.3rem; cursor: pointer; background: transparent;">My Tickets</span>
+            </div>
+
+            <div style="padding: 3rem; background: #0f172a; border-top: 1px solid #1e293b;">
+                <form onsubmit="handleChatSubmit(event)" style="display: flex; gap: 1.5rem;">
+                    <input id="chat-input" type="text" placeholder="Tell me your destination or query..." style="flex: 1; background: #020617; border: 1px solid #334155; padding: 1.5rem 2.5rem; border-radius: 1.5rem; color: #fff; font-size: 1.6rem;">
+                    <button type="submit" class="btn" style="padding: 1rem 2.5rem;"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOVED TRAVEL EXPERT HUB TO TOP -->
+    <section id="travel-expert-monitor" style="padding: 10rem 7%; background: #020617;">
+        <h1 class="heading">
+            <span>t</span>
+            <span>r</span>
+            <span>a</span>
+            <span>v</span>
+            <span>e</span>
+            <span>l</span>
+            <span class="space"></span>
+            <span>e</span>
+            <span>x</span>
+            <span>p</span>
+            <span>e</span>
+            <span>r</span>
+            <span>t</span>
+        </h1>
+
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem; margin-top: 5rem;">
+            
+            <!-- LEFT: TICKET DISPLAY -->
+            <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-radius: 3rem; border: 1px solid #1e293b; padding: 4rem;">
+                <h3 style="font-size: 2.5rem; color: #f8fafc; margin-bottom: 3rem;"><i class="fas fa-plane-arrival"></i> Booked Tickets</h3>
+                
+                <div id="itinerary-live-box" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div style="padding: 2.5rem; background: #020617; border-radius: 2rem; border-left: 6px solid #38bdf8;">
+                        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <span id="itinerary-passenger" style="font-size: 1.8rem; color: #f59e0b; font-weight: bold;">---</span>
+                            <span id="itinerary-pnr" style="font-size: 1.2rem; color: #38bdf8; font-family: monospace;">#PNR-LIVE</span>
+                        </div>
+                        <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <span style="font-size: 1.2rem; color: #64748b;">FLIGHT</span>
+                                <b id="itinerary-flight" style="display:block; font-size: 1.8rem; color: #fff;">---</b>
+                            </div>
+                            <div>
+                                <span style="font-size: 1.2rem; color: #64748b;">TRAIN</span>
+                                <b id="itinerary-train" style="display:block; font-size: 1.8rem; color: #fff;">---</b>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.3rem; color: #94a3b8; padding-top: 1rem; border-top: 1px solid #1e293b;">
+                            <i class="fas fa-couch"></i> <span id="itinerary-seat">---</span> | <i class="fas fa-door-open"></i> <span id="itinerary-gate">---</span>
+                        </div>
+                    </div>
+
+                    <div style="padding: 2.5rem; background: #020617; border-radius: 2rem; border-left: 6px solid #facc15;">
+                         <span style="font-size: 1.2rem; color: #64748b;">VISA COMPLIANCE</span>
+                         <b id="itinerary-visa" style="display:block; font-size: 1.8rem; color: #fff; margin-top: .5rem;">---</b>
+                    </div>
+                    
+                    <button onclick="triggerSkillDisruption()" class="btn" style="width: 100%; border: none; background: #e11d48; margin-top: 2rem; padding: 2rem; font-size: 1.8rem;">⚡ Check Disruptions</button>
+                    <a href="/itinerary/offline" style="text-align:center; display:block; margin-top: 1rem; color: #94a3b8; font-size: 1.2rem;"><i class="fas fa-download"></i> Save Recovery Plan Offline</a>
+                </div>
+            </div>
+
+            <!-- RIGHT: MASTER PLAN & MONITORING -->
+            <div style="display: flex; flex-direction: column; gap: 3rem;">
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 3rem; border: 1px solid #1e293b; min-height: 50rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                         <h3 style="font-size: 2.5rem; color: #38bdf8;"><i class="fas fa-map-marked-alt"></i> Optimized AI Plan</h3>
+                         <div id="itinerary-status" style="font-size: 1.4rem; color: #10b981; padding: .6rem 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 2rem;">ACTIVE</div>
+                    </div>
+                    
+                    <div id="ai-plan-output" style="font-size: 1.6rem; color: #f8fafc; line-height: 1.8;">
+                        <p style="color: #94a3b8;">Chat with Deep Concierge to generate a live itinerary...</p>
+                    </div>
+
+                    <div style="margin-top: 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div style="background: #020617; padding: 2rem; border-radius: 1.5rem; border: 1px solid #1e293b;">
+                             <span style="color: #38bdf8; font-size: 1.2rem;"><i class="fas fa-wallet"></i> SPENT</span>
+                             <b id="itinerary-spent" style="display:block; font-size: 2rem; color: #fff; margin: .5rem 0;">$0</b>
+                             <div style="width: 100%; height: .5rem; background: #1e293b; border-radius: 1rem; overflow: hidden;">
+                                <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: #38bdf8; transition: 1s;"></div>
+                             </div>
+                        </div>
+                        <div style="background: #020617; padding: 2rem; border-radius: 1.5rem; border: 1px solid #1e293b; text-align: center;">
+                             <span style="color: #10b981; font-size: 1.2rem;"><i class="fas fa-leaf"></i> ECO-FOOTPRINT</span>
+                             <b id="itinerary-carbon" style="display:block; font-size: 2.22rem; color: #fff; margin-top: .5rem;">---</b>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Reasoning Console -->
+                <div style="background: rgba(2, 6, 23, 0.8); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
+                    <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 1.5rem;"><i class="fas fa-terminal"></i> AI Analysis Flow</h4>
+                    <div id="skill-reasoning-log" style="height: 12rem; overflow-y: auto; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">
+                         Waiting for task generation...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+            <span>n</span>
+            <span>o</span>
+            <span>w</span>
+        </h1>
+
+        <div class="row">
+
+            <div class="image">
+                <img src="{{url_for('static', filename='img/White Travels_logo.png')}}" alt="Booking White Travels logo">
+            </div>
+
+            <div class="booking-options" style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; width: 100%; padding: 2rem;">
+                <a href="/flights" class="booking-card" style="flex: 1; min-width: 25rem; padding: 3rem; background: #fff; border-radius: 1rem; text-align: center; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); transition: transform .3s;">
+                    <i class="fas fa-plane" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem;"></i>
+                    <h3 style="font-size: 2.5rem; color: #333;">Book Flights</h3>
+                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Travel the world with our premium airline partners.</p>
+                </a>
+                
+                <a href="/hotels" class="booking-card" style="flex: 1; min-width: 25rem; padding: 3rem; background: #fff; border-radius: 1rem; text-align: center; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); transition: transform .3s;">
+                    <i class="fas fa-hotel" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem;"></i>
+                    <h3 style="font-size: 2.5rem; color: #333;">Book Hotels</h3>
+                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Find the perfect stay at the best prices guaranteed.</p>
+                </a>
+
+                <a href="/trains" class="booking-card" style="flex: 1; min-width: 25rem; padding: 3rem; background: #fff; border-radius: 1rem; text-align: center; box-shadow: 0 .5rem 1rem rgba(0,0,0,.1); transition: transform .3s;">
+                    <i class="fas fa-train" style="font-size: 5rem; color: var(--primary); margin-bottom: 2rem;"></i>
+                    <h3 style="font-size: 2.5rem; color: #333;">Book Trains</h3>
+                    <p style="font-size: 1.5rem; color: #666; margin-top: 1rem;">Scenic routes and seamless city-to-city travel.</p>
+                </a>
+            </div>
+
+        </div>
+    </section>
+    
+    <!-- packages section  -->
+
+    <section class="packages" id="packages">
+        <h1 class="heading">
+            <span>p</span>
+            <span>a</span>
+            <span>c</span>
+            <span>k</span>
+            <span>a</span>
+            <span>g</span>
+            <span>e</span>
+            <span>s</span>
+        </h1>
+
+        <div class="box-container">
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/cabo.jpg')}}" alt="Cabo San Lucas vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Cabo San Lucas</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$800 <span>$1,100</span></div>
+                    <a href="/destinations/cabo" class="btn" id="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/london.jpg')}}" alt="London vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>London</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$1,200 <span>$1,500</span></div>
+                    <a href="/destinations/london" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/tokyo.jpg')}}" alt="Tokyo vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Tokyo</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$1,800 <span>$2,300</span></div>
+                    <a href="/destinations/tokyo" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/honolulu.jpg')}}" alt="Honolulu vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Honolulu</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$800 <span>$1,000</span></div>
+                    <a href="/destinations/honolulu" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/new_york.jpg')}}" alt="New York vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>New York City</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$900 <span>$1,200</span></div>
+                    <a href="/destinations/new_york_city" class="btn">More Info</a>
+                </div>
+            </div>
+
+            <div class="box">
+                <img src="{{url_for('static', filename='img/paris.jpg')}}" alt="Paris vacation package image">
+                <div class="content">
+                    <h3> <i class="fas fa-map-marker-alt"></i>Paris</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Illo deserunt officia explicabo quia quisquam est error 
+                    blanditiis consequatur maiores! Odit placeat neque alias ipsam cumque quasi temporibus, et praesentium. Sit?</p>
+                    <div class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <div class="price">$900 <span>$1,350</span></div>
+                    <a href="/destinations/paris" class="btn">More Info</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- contact section  -->
+
+    <section class="contact" id="contact">
+        <h1 class="heading">
+            <span>c</span>
+            <span>o</span>
+            <span>n</span>
+            <span>t</span>
+            <span>a</span>
+            <span>c</span>
+            <span>t</span>
+            <span class="space"></span>
+            <span>u</span>
+            <span>s</span>
+        </h1>
+
+        <div class="row">
+
+            <div class="image">
+                <img src="{{url_for('static', filename='img/contact-img.svg')}}" alt="Contact us logo">
+            </div>
+
+            <form action="/contact" id="contact_form" method="post">
+                <div class="inputBox">
+                    <input type="text" name="contact_name" placeholder="name">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_name']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                    <input type="email" name="contact_email" placeholder="email">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_email']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                </div>
+                <div class="inputBox">
+                    <input type="tel" name="contact_number" placeholder="number">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_number']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                    <input type="text" name="contact_subject" placeholder="subject">
+                    {% for message in get_flashed_messages(category_filter = ['err_contact_subject']) %}
+                    <p class="red">{{message}}</p>
+                    {% endfor %}
+                <textarea name="contact_message" cols="30" rows="10" placeholder="message"></textarea>
+                {% for message in get_flashed_messages(category_filter = ['err_contact_message']) %}
+                <p class="red">{{message}}</p>
+                {% endfor %}
+                <input type="submit" class="btn" value="Send Message">
+            </form>
+
+        </div>
+    </section>
+    <!-- AI DISRUPTION RECOVERY SECTION (HACKATHON EDITION) -->
+    <!-- WORKSPACE SKILL: TRAVEL EXPERT LIVE MONITORING -->
+    <section class="travel-expert-monitor" id="travel-expert-monitor" style="background: #020617; padding: 10rem 2rem; color: #fff; overflow: hidden; position: relative;">
+        <!-- Background Accents -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.05) 0%, transparent 50%), radial-gradient(circle at 90% 90%, rgba(225, 29, 72, 0.05) 0%, transparent 50%); border-top: 1px solid #1e293b;"></div>
+
+        <h1 class="heading" style="margin-bottom: 6rem;">
+            <span style="color: #38bdf8;">T</span>
+            <span>r</span>
+            <span>a</span>
+            <span>v</span>
+            <span>e</span>
+            <span>l</span>
+            <span class="space"></span>
+            <span style="color: #38bdf8;">E</span>
+            <span>x</span>
+            <span>p</span>
+            <span>e</span>
+            <span>r</span>
+            <span>t</span>
+        </h1>
+
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(40rem, 1fr)); gap: 4rem; position: relative; z-index: 1;">
+            
+            <!-- Itinerary Live Card -->
+            <div style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); padding: 5rem; border-radius: 2.5rem; border: 1px solid #1e293b; box-shadow: 0 2rem 5rem rgba(0,0,0,0.4); position: relative;">
+                <div style="position: absolute; top: 3rem; right: 3rem; padding: .6rem 1.5rem; background: #020617; border: 1px solid #38bdf8; border-radius: 2rem; font-family: monospace; font-size: 1.2rem; color: #38bdf8;">PNR LIVE ASSET</div>
+                
+                <h3 style="font-size: 3rem; margin-bottom: 3rem; color: #f8fafc;"><i class="fas fa-ticket-alt" style="color: #38bdf8;"></i> Active Itinerary</h3>
+                
+                <div id="itinerary-live-box" style="margin-bottom: 4rem; padding: 3rem; background: #020617; border-radius: 1.5rem; border-left: 5px solid #38bdf8;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dotted #334155;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">PASSENGER</span>
+                        <b id="itinerary-passenger" style="font-size: 2.2rem; color: #f59e0b;">---</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">FLIGHT NO</span>
+                        <b id="itinerary-flight" style="font-size: 2.2rem; color: #fff;">---</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">TRAIN NO</span>
+                        <b id="itinerary-train" style="font-size: 2.2rem; color: #fff;">---</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding: 1.5rem; background: #0f172a; border-radius: 1rem;">
+                        <div>
+                            <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: .5rem;">SEAT / CLASS</span>
+                            <b id="itinerary-seat" style="font-size: 1.6rem; color: #fff;">---</b>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: .5rem;">GATE / TIME</span>
+                            <b id="itinerary-gate" style="font-size: 1.6rem; color: #fff;">---</b>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">STATUS</span>
+                        <b id="itinerary-status" style="font-size: 1.8rem; color: #10b981; padding: .4rem 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: .5rem;">---</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">VISA STATUS</span>
+                        <b id="itinerary-visa" style="font-size: 1.7rem; color: #facc15;">---</b>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
+                    <button onclick="triggerSkillDisruption()" class="btn" style="flex: 2; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
+                    <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;"><i class="fas fa-sync"></i> Refresh</button>
+                </div>
+
+                <!-- Feature 4: Crisis Card Link -->
+                <div style="padding: 2.5rem; background: rgba(225, 29, 72, 0.05); border: 1px dashed #e11d48; border-radius: 1.5rem; text-align: center;">
+                    <a href="/itinerary/offline" style="color: #e11d48; text-decoration: none; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+                        <i class="fas fa-file-download"></i> Download Offline Crisis Card (JSON)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Agent Reasoning Cluster + New Feature Widgets -->
+            <div style="display: grid; gap: 3rem;">
+                <!-- Feature 3 & 6: Financials & Sustainability -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
+                        <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-wallet"></i> Expense Hub</h4>
+                        <div id="budget-bar-container" style="width: 100%; height: 1rem; background: #020617; border-radius: 1rem; margin-bottom: 1.5rem; overflow: hidden;">
+                            <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width 1s ease;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 1.2rem; color: #94a3b8;">Spent: <b id="itinerary-spent" style="color: #fff;">$0</b></span>
+                            <span style="font-size: 1.2rem; color: #94a3b8;">Limit: <b id="itinerary-limit" style="color: #fff;">$2500</b></span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b; text-align: center;">
+                        <h4 style="font-size: 1.4rem; color: #10b981; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-leaf"></i> Eco-Footprint</h4>
+                        <b id="itinerary-carbon" style="font-size: 2.5rem; color: #fff; display: block; margin-bottom: 1rem;">---</b>
+                        <p style="font-size: 1.1rem; color: #94a3b8;">AI suggests Carbon Offset</p>
+                    </div>
+                </div>
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 2.5rem; border: 1px solid #1e293b; position: relative; min-height: 400px; display: flex; flex-direction: column;">
+                    <h3 style="font-size: 2.22rem; color: #38bdf8; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1.5rem;">
+                        <i class="fas fa-robot"></i> Workspace Skill Log
+                    </h3>
+                    
+                    <div id="skill-reasoning-log" style="flex: 1; background: #020617; border-radius: 1rem; padding: 2.5rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 1.3rem; color: #38bdf8; line-height: 1.8; overflow-y: auto;">
+                        <p style="color: #475569;">// Waiting for itinerary.json change...</p>
+                        <p style="color: #475569;">// Skill [travel-expert] Indexed.</p>
+                    </div>
+
+                    <div style="margin-top: 2.5rem; padding: 2rem; background: rgba(56, 189, 248, 0.05); border-radius: 1rem; border-left: 4px solid #38bdf8;">
+                        <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: .8rem;">AUTONOMOUS ACTION DETECTED</h4>
+                        <p id="skill-action-desc" style="font-size: 1.2rem; color: #94a3b8;">Listening for flight cancellations in your workspace...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK BOOK MULTI-STEP MODAL -->
+    <div id="quick-book-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10001; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center;">
+        <div style="background: #fff; width: 700px; padding: 4rem; border-radius: 2rem; position: relative;">
+            <i class="fas fa-times" onclick="closeQuickBook()" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #666;"></i>
+            
+            <div id="qb-step-1" class="qb-step">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">Where are you going?</h2>
+                <input type="text" id="qb-destination" class="box" placeholder="e.g. Paris, Japan, London..." style="width: 100%; padding: 1.5rem; font-size: 1.6rem; border: 1px solid #eee; border-radius: .5rem; margin-bottom: 2rem;">
+                <button onclick="nextQB(2)" class="btn">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="qb-step-2" class="qb-step" style="display: none;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">Number of Days</h2>
+                <input type="number" id="qb-days" class="box" placeholder="e.g. 5" style="width: 100%; padding: 1.5rem; font-size: 1.6rem; border: 1px solid #eee; border-radius: .5rem; margin-bottom: 2rem;">
+                <button onclick="nextQB(3)" class="btn">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="qb-step-3" class="qb-step" style="display: none;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">What's your total budget?</h2>
+                <input type="number" id="qb-budget" class="box" placeholder="e.g. 2000" style="width: 100%; padding: 1.5rem; font-size: 1.6rem; border: 1px solid #eee; border-radius: .5rem; margin-bottom: 2rem;">
+                <button onclick="nextQB(4)" class="btn">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="qb-step-4" class="qb-step" style="display: none;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">Number of People</h2>
+                <input type="number" id="qb-people" class="box" placeholder="e.g. 3" style="width: 100%; padding: 1.5rem; font-size: 1.6rem; border: 1px solid #eee; border-radius: .5rem; margin-bottom: 2rem;">
+                <button onclick="nextQB(5)" class="btn">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="qb-step-5" class="qb-step" style="display: none;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">What are your preferences?</h2>
+                <input type="text" id="qb-preferences" class="box" placeholder="e.g. historical sites, spicy food, relaxing..." style="width: 100%; padding: 1.5rem; font-size: 1.6rem; border: 1px solid #eee; border-radius: .5rem; margin-bottom: 2rem;">
+                <button onclick="generatePlan()" class="btn" style="background: #38bdf8; width: 100%;">Generate AI Plan <i class="fas fa-magic"></i></button>
+            </div>
+
+            <div id="qb-step-6" class="qb-step" style="display: none;">
+                <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem; color: #10b981;"><i class="fas fa-calendar-check"></i> Your AI-Crafted Plan</h2>
+                <div id="qb-plan-content" style="background: #ffffff; padding: 2.5rem; border-radius: 1rem; font-size: 1.5rem; line-height: 1.8; max-height: 400px; overflow-y: auto; margin-bottom: 2rem; border: 1px solid #cbd5e1; color: #334155; box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);">
+                    Analyzing your preferences...
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="nextQB(1)" class="btn" style="flex: 1; background: #64748b; padding: 1rem;">Change Info</button>
+                    <button onclick="confirmQuickBook()" class="btn" style="flex: 1; padding: 1rem;">Book Trip <i class="fas fa-check"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREMIUM AI CHAT WIDGET (DEEP CONCIERGE) -->
+    <div id="ai-chat-widget" style="position: fixed; bottom: 3rem; right: 3rem; z-index: 10000; display: flex; flex-direction: column; align-items: flex-end;">
+        <div id="ai-chat-window" style="display: none; width: 380px; height: 500px; background: #fff; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 2rem; overflow: hidden; border: 1px solid #f1f5f9; flex-direction: column;">
+            <div style="background: #0f172a; padding: 2rem; color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></div>
+                    <h3 style="font-size: 1.8rem;">Deep Concierge</h3>
+                </div>
+                <i class="fas fa-times" onclick="toggleAIChat()" style="cursor: pointer; font-size: 1.6rem;"></i>
+            </div>
+            <div id="ai-chat-body" style="flex: 1; padding: 2rem; overflow-y: auto; background: #f8fafc; font-size: 1.4rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="align-self: flex-start; background: #fff; padding: 1rem 1.5rem; border-radius: 15px 15px 15px 0; border: 1px solid #e2e8f0; max-width: 85%;">
+                    Hello! I'm your Deep Concierge. I'm monitoring your workspace in real-time. How can I assist with your journey today?
+                </div>
+            </div>
+            <div style="padding: 1.5rem; border-top: 1px solid #f1f5f9; display: flex; gap: 1rem; background: #fff;">
+                <input type="text" id="ai-chat-input" placeholder="Ask about weather, flights, or rebooking..." style="flex: 1; padding: 1.2rem; border-radius: 10px; background: #f1f5f9; font-size: 1.4rem;">
+                <button onclick="sendAIChat()" style="background: #38bdf8; color: #fff; width: 4.5rem; height: 4.5rem; border-radius: 10px; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        <div onclick="toggleAIChat()" style="width: 7rem; height: 7rem; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2.5rem; cursor: pointer; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4); border: 4px solid #fff;">
+            <i class="fas fa-comment-dots"></i>
+        </div>
+    </div>
+    <script src="{{url_for('static', filename='js/script.js')}}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(document.getElementById('ai-assistant-dashboard')) {
+                updateAssistantContext();
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(toggleChat, 1500); // Open Chat Auto-pilot after 1.5s
+        });
+    </script>
+</body>
+</html>
