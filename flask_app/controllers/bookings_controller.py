@@ -162,17 +162,20 @@ def book_hotel():
 def get_itinerary_status():
     try:
         with open('itinerary.json', 'r') as f:
-            itinerary = json.load(f)[0]
+            itinerary = json.load(f)
         
-        # Real-time Flight Monitor Bridge
-        if itinerary.get('flight_no') and '-' not in itinerary['flight_no']:
-            code, num = itinerary['flight_no'][:2], itinerary['flight_no'][2:]
-            real_status = api_hub.track_flight_status(code, num, "2026-03-26")
-            
-            if "status" in real_status and real_status['status'] in ['DELAYED', 'CANCELLED']:
-                itinerary['status'] = real_status['status'].upper()
-                with open('itinerary.json', 'w') as f:
-                    json.dump([itinerary], f, indent=4)
+        # Real-time Flight Monitor Bridge (for all active entries)
+        for booking in itinerary:
+            if booking.get('flight_no') and '-' not in booking['flight_no']:
+                code, num = booking['flight_no'][:2], booking['flight_no'][2:]
+                real_status = api_hub.track_flight_status(code, num, "2026-03-26")
+                
+                if "status" in real_status and real_status['status'] in ['DELAYED', 'CANCELLED']:
+                    booking['status'] = real_status['status'].upper()
+        
+        with open('itinerary.json', 'w') as f:
+            json.dump(itinerary, f, indent=4)
+        
         return jsonify(itinerary)
     except (FileNotFoundError, json.JSONDecodeError, IndexError) as e:
         print(f"[ITINERARY] No active itinerary: {e}")

@@ -243,55 +243,33 @@ window.confirmGlobalPayment = function(e) {
 
 let lastNotifiedState = '';
 
+let currentItineraryData = [];
+let selectedPassengerIndex = 0;
+
 async function refreshItineraryStatus() {
     try {
         const res = await fetch('/itinerary/status');
         const data = await res.json();
-        const passengerEl = document.getElementById('itinerary-passenger');
-        const flightEl = document.getElementById('itinerary-flight');
-        const trainEl = document.getElementById('itinerary-train');
-        const statusEl = document.getElementById('itinerary-status');
-        const pnrEl = document.getElementById('itinerary-pnr');
-        const seatEl = document.getElementById('itinerary-seat');
-        const gateEl = document.getElementById('itinerary-gate');
-        const visaEl = document.getElementById('itinerary-visa');
-        const spentEl = document.getElementById('itinerary-spent');
-        const limitEl = document.getElementById('itinerary-limit');
-        const carbonEl = document.getElementById('itinerary-carbon');
-        const budgetBar = document.getElementById('itinerary-budget-bar');
         
-        if(passengerEl) passengerEl.innerText = data.passenger_name || 'Anonymous';
-        if(flightEl) flightEl.innerText = data.flight_no || '---';
-        if(trainEl) trainEl.innerText = data.train_no || '---';
-        if(pnrEl) pnrEl.innerText = data.pnr || '---';
-        if(seatEl) seatEl.innerText = (data.seat || '--') + ' / ' + (data.class_type || '--');
-        if(gateEl) gateEl.innerText = (data.gate || '--') + ' | ' + (data.boarding_time || '--');
-        if(visaEl) visaEl.innerText = data.visa_status || 'Visa-Free';
-        if(spentEl) spentEl.innerText = `$${data.budget_spent || 0}`;
-        if(limitEl) limitEl.innerText = `$${data.budget_limit || 2500}`;
-        if(carbonEl) carbonEl.innerText = data.carbon_kg || '---';
-        if(budgetBar) {
-            const perc = ((data.budget_spent || 0) / (data.budget_limit || 2500)) * 100;
-            budgetBar.style.width = `${perc}%`;
+        if (!Array.isArray(data)) {
+            console.error("Itinerary data is not an array");
+            return;
+        }
+        
+        currentItineraryData = data;
+        const selector = document.getElementById('passenger-selector');
+        if (selector) {
+            const currentVal = selector.value;
+            selector.innerHTML = data.map((p, index) => `<option value="${index}" ${index == currentVal ? 'selected' : ''}>${p.passenger_name}</option>`).join('');
+            selectedPassengerIndex = selector.value || 0;
         }
 
-        if(statusEl) {
-            statusEl.innerText = data.status ? data.status.toUpperCase() : '---';
-            if(data.status && data.status.toUpperCase() === 'CANCELLED') {
-                statusEl.style.color = '#e11d48';
-                statusEl.style.background = 'rgba(225, 29, 72, 0.1)';
-            } else if(data.status && data.status.toUpperCase() === 'REBOOKED') {
-                statusEl.style.color = '#38bdf8';
-                statusEl.style.background = 'rgba(56, 189, 248, 0.1)';
-            } else {
-                statusEl.style.color = '#10b981';
-                statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
-            }
-        }
+        updateItineraryUI(data[selectedPassengerIndex]);
 
-        // Real-time Notification Injection
-        const currentState = (data.flight_no || '') + '|' + (data.train_no || '') + '|' + (data.status || '');
-        if (data.status && data.status.toUpperCase() === 'CANCELLED' && currentState !== lastNotifiedState) {
+        // Real-time Notification Injection (only for currently selected)
+        const current = data[selectedPassengerIndex];
+        const currentState = (current.flight_no || '') + '|' + (current.train_no || '') + '|' + (current.status || '');
+        if (current.status && current.status.toUpperCase() === 'CANCELLED' && currentState !== lastNotifiedState) {
             lastNotifiedState = currentState;
             const notifBox = document.getElementById('dynamic-notifications');
             const badge = document.getElementById('notification-badge');
@@ -300,11 +278,11 @@ async function refreshItineraryStatus() {
                 if (notifBox.innerHTML.includes('No recent disruptions detected.')) {
                     notifBox.innerHTML = ''; 
                 }
-                const flAlert = data.flight_no ? `Flight ${data.flight_no}` : '';
-                const trAlert = data.train_no ? `Train ${data.train_no}` : '';
+                const flAlert = current.flight_no ? `Flight ${current.flight_no}` : '';
+                const trAlert = current.train_no ? `Train ${current.train_no}` : '';
                 const joined = [flAlert, trAlert].filter(Boolean).join(' & ');
                 
-                const ticketInfo = `[${data.passenger_name || 'Passenger'}] ${data.seat ? 'Seat ' + data.seat : ''}`;
+                const ticketInfo = `[${current.passenger_name || 'Passenger'}] ${current.seat ? 'Seat ' + current.seat : ''}`;
 
                 const alertHtml = `
                     <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid #e11d48; border-radius: 0.5rem; animation: fadein 0.5s;">
@@ -321,8 +299,58 @@ async function refreshItineraryStatus() {
             }
         }
         
-        return data.status;
+        return current.status;
     } catch (err) { console.error("Error refreshing itinerary:", err); }
+}
+
+function updateItineraryUI(data) {
+    if (!data) return;
+    const passengerEl = document.getElementById('itinerary-passenger');
+    const flightEl = document.getElementById('itinerary-flight');
+    const trainEl = document.getElementById('itinerary-train');
+    const statusEl = document.getElementById('itinerary-status');
+    const pnrEl = document.getElementById('itinerary-pnr');
+    const seatEl = document.getElementById('itinerary-seat');
+    const gateEl = document.getElementById('itinerary-gate');
+    const visaEl = document.getElementById('itinerary-visa');
+    const spentEl = document.getElementById('itinerary-spent');
+    const limitEl = document.getElementById('itinerary-limit');
+    const carbonEl = document.getElementById('itinerary-carbon');
+    const budgetBar = document.getElementById('itinerary-budget-bar');
+    
+    if(passengerEl) passengerEl.innerText = data.passenger_name || 'Anonymous';
+    if(flightEl) flightEl.innerText = data.flight_no || '---';
+    if(trainEl) trainEl.innerText = data.train_no || '---';
+    if(pnrEl) pnrEl.innerText = data.pnr || '---';
+    if(seatEl) seatEl.innerText = (data.seat || '--') + ' / ' + (data.class_type || '--');
+    if(gateEl) gateEl.innerText = (data.gate || '--') + ' | ' + (data.boarding_time || '--');
+    if(visaEl) visaEl.innerText = data.visa_status || 'Visa-Free';
+    if(spentEl) spentEl.innerText = `$${data.budget_spent || 0}`;
+    if(limitEl) limitEl.innerText = `$${data.budget_limit || 2500}`;
+    if(carbonEl) carbonEl.innerText = data.carbon_kg || '---';
+    if(budgetBar) {
+        const perc = ((data.budget_spent || 0) / (data.budget_limit || 2500)) * 100;
+        budgetBar.style.width = `${perc}%`;
+    }
+
+    if(statusEl) {
+        statusEl.innerText = data.status ? data.status.toUpperCase() : '---';
+        if(data.status && data.status.toUpperCase() === 'CANCELLED') {
+            statusEl.style.color = '#e11d48';
+            statusEl.style.background = 'rgba(225, 29, 72, 0.1)';
+        } else if(data.status && data.status.toUpperCase() === 'REBOOKED') {
+            statusEl.style.color = '#38bdf8';
+            statusEl.style.background = 'rgba(56, 189, 248, 0.1)';
+        } else {
+            statusEl.style.color = '#10b981';
+            statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
+        }
+    }
+}
+
+function switchPassenger() {
+    selectedPassengerIndex = document.getElementById('passenger-selector').value;
+    updateItineraryUI(currentItineraryData[selectedPassengerIndex]);
 }
 
 async function triggerSkillDisruption() {

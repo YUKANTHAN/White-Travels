@@ -1,1 +1,20 @@
-﻿@[{"booking_id": "FL202", "status": "CANCELLED", "passenger": "John Doe", "route": "Cabo to NYC"}]@
+[
+    {
+        "booking_id": "FL202",
+        "status": "CANCELLED",
+        "passenger": "John Doe",
+        "route": "Cabo to NYC"
+    },
+    {
+        "booking_id": "BA202",
+        "status": "CONFIRMED",
+        "passenger": "Sarah Connor",
+        "route": "LAX to LHR"
+    },
+    {
+        "booking_id": "TRN-88",
+        "status": "CONFIRMED",
+        "passenger": "Sarah Connor",
+        "route": "London to Heathrow"
+    }
+]
