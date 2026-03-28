@@ -2,19 +2,19 @@
     {
         "status": "CONFIRMED",
         "passenger_name": "J. Doe (Primary)",
-        "seat": "33D",
+        "seat": "8F",
         "class_type": "Economy",
-        "gate": "A7",
+        "gate": "A9",
         "boarding_time": "10:15 AM",
-        "flight_no": "DL889",
+        "flight_no": "BA202",
         "train_no": "",
         "hotel": "AI Selected Stay",
         "origin": "Current",
         "destination": "Paris",
-        "pnr": "SIM-ITN-5758",
+        "pnr": "SIM-ITN-8262",
         "budget_limit": 2500,
-        "budget_spent": 562,
-        "carbon_kg": "440kg",
+        "budget_spent": 560,
+        "carbon_kg": "526kg",
         "visa_status": "Processing Draft..."
     }
 ]
