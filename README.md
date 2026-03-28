@@ -65,5 +65,7 @@ Additionally, the suite supports complex group coordination with multi-passenger
 - **Automation Templates**: Pre-configured JSON templates (`n8n_disruption_agent.json`, `n8n_real_time_detector.json`) for seamless integration.
 
 ## License
-
-This project is intended for educational and hackathon purposes. Let's travel smarter!
+Yukanthan P G
+Vignesh B
+RamKumar J
+Ramakrishnan M
